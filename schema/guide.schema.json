@@ -1,0 +1,796 @@
+{
+  "$defs": {
+    "AgentVsHuman": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_can": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Agent Can",
+          "type": "array"
+        },
+        "agent_did": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Agent Did",
+          "type": "array"
+        },
+        "human_must": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Human Must",
+          "type": "array"
+        }
+      },
+      "required": [
+        "human_must"
+      ],
+      "title": "AgentVsHuman",
+      "type": "object"
+    },
+    "AppInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "minLength": 1,
+          "title": "Category",
+          "type": "string"
+        },
+        "developer_console_url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Developer Console Url"
+        },
+        "docs_urls": {
+          "items": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Docs Urls",
+          "type": "array"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "slug": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+          "title": "Slug",
+          "type": "string"
+        },
+        "website": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Website",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "slug",
+        "website",
+        "category",
+        "docs_urls"
+      ],
+      "title": "AppInfo",
+      "type": "object"
+    },
+    "Blocker": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker": {
+          "minLength": 1,
+          "title": "Blocker",
+          "type": "string"
+        },
+        "contact": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contact"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "how_to_get_past": {
+          "minLength": 1,
+          "title": "How To Get Past",
+          "type": "string"
+        }
+      },
+      "required": [
+        "blocker",
+        "how_to_get_past",
+        "evidence"
+      ],
+      "title": "Blocker",
+      "type": "object"
+    },
+    "ComposioNote": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "managed_oauth": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ],
+          "title": "Managed Oauth",
+          "type": "string"
+        },
+        "snapshot_date": {
+          "format": "date",
+          "title": "Snapshot Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "managed_oauth",
+        "detail",
+        "snapshot_date",
+        "evidence"
+      ],
+      "title": "ComposioNote",
+      "type": "object"
+    },
+    "Difficulty": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "level": {
+          "enum": [
+            "Easy",
+            "Medium",
+            "Hard",
+            "Very hard"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "level",
+        "reason",
+        "evidence"
+      ],
+      "title": "Difficulty",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/EvidenceLabel"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "probe_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Probe Ids",
+          "type": "array"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceLabel": {
+      "enum": [
+        "TESTED",
+        "SOURCED",
+        "INFERRED",
+        "UNVERIFIED"
+      ],
+      "title": "EvidenceLabel",
+      "type": "string"
+    },
+    "Meta": {
+      "additionalProperties": false,
+      "properties": {
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "generated_by": {
+          "enum": [
+            "library",
+            "live_agent"
+          ],
+          "title": "Generated By",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "run_seconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Seconds"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sources_count": {
+          "minimum": 0,
+          "title": "Sources Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "generated_at",
+        "generated_by",
+        "sources_count"
+      ],
+      "title": "Meta",
+      "type": "object"
+    },
+    "Nuance": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "topic": {
+          "enum": [
+            "refresh_tokens",
+            "token_expiry",
+            "pkce",
+            "redirect_uris",
+            "sandbox_vs_production",
+            "rate_limits",
+            "tenancy",
+            "other"
+          ],
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "detail",
+        "evidence"
+      ],
+      "title": "Nuance",
+      "type": "object"
+    },
+    "Probe": {
+      "additionalProperties": false,
+      "description": "A safe automated check run by our backend code, never by the model.",
+      "properties": {
+        "http_status": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Http Status"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,31}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "oidc_discovery",
+            "oauth_metadata",
+            "authorize_endpoint",
+            "url_reachable"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "ran_at": {
+          "format": "date-time",
+          "title": "Ran At",
+          "type": "string"
+        },
+        "summary": {
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "target_url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Target Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "target_url",
+        "ran_at",
+        "ok",
+        "summary"
+      ],
+      "title": "Probe",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "minLength": 1,
+          "title": "Detail",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "enum": [
+            "yes",
+            "no",
+            "conditional"
+          ],
+          "title": "Required",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "required",
+        "detail",
+        "evidence"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "ReviewProcess": {
+      "additionalProperties": false,
+      "properties": {
+        "common_rejections": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Common Rejections",
+          "type": "array"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "required": {
+          "enum": [
+            "yes",
+            "no",
+            "conditional"
+          ],
+          "title": "Required",
+          "type": "string"
+        },
+        "trigger": {
+          "minLength": 1,
+          "title": "Trigger",
+          "type": "string"
+        },
+        "typical_wait": {
+          "minLength": 1,
+          "title": "Typical Wait",
+          "type": "string"
+        },
+        "what_to_submit": {
+          "items": {
+            "type": "string"
+          },
+          "title": "What To Submit",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required",
+        "trigger",
+        "typical_wait",
+        "evidence"
+      ],
+      "title": "ReviewProcess",
+      "type": "object"
+    },
+    "ScopeInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "standard",
+            "sensitive",
+            "restricted"
+          ],
+          "title": "Sensitivity",
+          "type": "string"
+        },
+        "triggers_review": {
+          "title": "Triggers Review",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "purpose",
+        "sensitivity",
+        "triggers_review",
+        "evidence"
+      ],
+      "title": "ScopeInfo",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "checked_on": {
+          "format": "date",
+          "title": "Checked On",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,31}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "official",
+            "community",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "format": "uri",
+          "maxLength": 2083,
+          "minLength": 1,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "title",
+        "kind",
+        "checked_on"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "expected_result": {
+          "minLength": 1,
+          "title": "Expected Result",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "where_url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Where Url"
+        },
+        "who": {
+          "enum": [
+            "agent",
+            "human",
+            "either"
+          ],
+          "title": "Who",
+          "type": "string"
+        }
+      },
+      "required": [
+        "order",
+        "title",
+        "action",
+        "who",
+        "expected_result",
+        "evidence"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "TimeEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_wait": {
+          "description": "e.g. 'none' or '2-6 weeks'",
+          "minLength": 1,
+          "title": "Approval Wait",
+          "type": "string"
+        },
+        "approval_wait_days_max": {
+          "minimum": 0,
+          "title": "Approval Wait Days Max",
+          "type": "integer"
+        },
+        "approval_wait_days_min": {
+          "minimum": 0,
+          "title": "Approval Wait Days Min",
+          "type": "integer"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "hands_on": {
+          "description": "Human-readable, e.g. '30-60 min'",
+          "minLength": 1,
+          "title": "Hands On",
+          "type": "string"
+        },
+        "hands_on_minutes_max": {
+          "minimum": 0,
+          "title": "Hands On Minutes Max",
+          "type": "integer"
+        },
+        "hands_on_minutes_min": {
+          "minimum": 0,
+          "title": "Hands On Minutes Min",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "hands_on",
+        "hands_on_minutes_min",
+        "hands_on_minutes_max",
+        "approval_wait",
+        "approval_wait_days_min",
+        "approval_wait_days_max",
+        "evidence"
+      ],
+      "title": "TimeEstimate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "agent_vs_human": {
+      "$ref": "#/$defs/AgentVsHuman"
+    },
+    "app": {
+      "$ref": "#/$defs/AppInfo"
+    },
+    "blockers": {
+      "items": {
+        "$ref": "#/$defs/Blocker"
+      },
+      "title": "Blockers",
+      "type": "array"
+    },
+    "composio_note": {
+      "$ref": "#/$defs/ComposioNote"
+    },
+    "difficulty": {
+      "$ref": "#/$defs/Difficulty"
+    },
+    "meta": {
+      "$ref": "#/$defs/Meta"
+    },
+    "nuances": {
+      "items": {
+        "$ref": "#/$defs/Nuance"
+      },
+      "title": "Nuances",
+      "type": "array"
+    },
+    "probes": {
+      "items": {
+        "$ref": "#/$defs/Probe"
+      },
+      "title": "Probes",
+      "type": "array"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/Requirement"
+      },
+      "title": "Requirements",
+      "type": "array"
+    },
+    "review_process": {
+      "$ref": "#/$defs/ReviewProcess"
+    },
+    "scopes": {
+      "items": {
+        "$ref": "#/$defs/ScopeInfo"
+      },
+      "title": "Scopes",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/Step"
+      },
+      "minItems": 1,
+      "title": "Steps",
+      "type": "array"
+    },
+    "summary": {
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "time": {
+      "$ref": "#/$defs/TimeEstimate"
+    },
+    "unverified": {
+      "description": "What we could not verify, in plain words",
+      "items": {
+        "type": "string"
+      },
+      "title": "Unverified",
+      "type": "array"
+    }
+  },
+  "required": [
+    "app",
+    "summary",
+    "difficulty",
+    "time",
+    "requirements",
+    "scopes",
+    "steps",
+    "review_process",
+    "blockers",
+    "agent_vs_human",
+    "nuances",
+    "composio_note",
+    "sources",
+    "probes",
+    "meta"
+  ],
+  "title": "Guide",
+  "type": "object"
+}

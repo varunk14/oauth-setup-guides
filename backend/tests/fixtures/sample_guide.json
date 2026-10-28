@@ -1,0 +1,126 @@
+{
+  "app": {
+    "name": "Example App",
+    "slug": "example-app",
+    "website": "https://example.com",
+    "category": "Testing",
+    "docs_urls": ["https://example.com/docs/oauth"],
+    "developer_console_url": "https://example.com/developers"
+  },
+  "summary": "Synthetic guide used only by tests. Self-serve, about 15 minutes, no review.",
+  "difficulty": {
+    "level": "Easy",
+    "reason": "Self-serve form with no review.",
+    "evidence": {"label": "SOURCED", "source_ids": ["s1"]}
+  },
+  "time": {
+    "hands_on": "10-20 min",
+    "hands_on_minutes_min": 10,
+    "hands_on_minutes_max": 20,
+    "approval_wait": "none",
+    "approval_wait_days_min": 0,
+    "approval_wait_days_max": 0,
+    "evidence": {"label": "INFERRED", "note": "Estimated from the number of form fields."}
+  },
+  "requirements": [
+    {
+      "name": "Developer account",
+      "required": "yes",
+      "detail": "A free account is enough.",
+      "evidence": {"label": "SOURCED", "source_ids": ["s1"]}
+    }
+  ],
+  "scopes": [
+    {
+      "name": "read",
+      "purpose": "Read basic data.",
+      "sensitivity": "standard",
+      "triggers_review": false,
+      "evidence": {"label": "UNVERIFIED"}
+    }
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "title": "Create the app",
+      "action": "Open the developer console and click New app.",
+      "where_url": "https://example.com/developers",
+      "who": "human",
+      "expected_result": "You see a client ID and a client secret.",
+      "evidence": {"label": "SOURCED", "source_ids": ["s1"]}
+    },
+    {
+      "order": 2,
+      "title": "Check the authorize endpoint",
+      "action": "Call the authorize endpoint with a fake client ID.",
+      "who": "agent",
+      "expected_result": "The provider answers with an invalid client error.",
+      "evidence": {"label": "TESTED", "probe_ids": ["p1"]}
+    }
+  ],
+  "review_process": {
+    "required": "no",
+    "trigger": "No review for any scope.",
+    "what_to_submit": [],
+    "typical_wait": "none",
+    "common_rejections": [],
+    "evidence": {"label": "SOURCED", "source_ids": ["s1"]}
+  },
+  "blockers": [],
+  "agent_vs_human": {
+    "agent_did": ["Checked that the authorize endpoint answers."],
+    "agent_can": ["Fill in redirect URIs once you are logged in."],
+    "human_must": ["Log in and create the app."]
+  },
+  "nuances": [
+    {
+      "topic": "pkce",
+      "detail": "PKCE with S256 is supported.",
+      "evidence": {"label": "TESTED", "probe_ids": ["p2"]}
+    }
+  ],
+  "unverified": ["Scope list may be incomplete."],
+  "composio_note": {
+    "managed_oauth": "unknown",
+    "detail": "Synthetic app; not in the Composio directory.",
+    "snapshot_date": "2026-10-28",
+    "evidence": {"label": "UNVERIFIED"}
+  },
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://example.com/docs/oauth",
+      "title": "Example OAuth docs",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    }
+  ],
+  "probes": [
+    {
+      "id": "p1",
+      "kind": "authorize_endpoint",
+      "target_url": "https://example.com/oauth/authorize",
+      "ran_at": "2026-10-28T10:00:00Z",
+      "ok": true,
+      "http_status": 400,
+      "summary": "Returned invalid_client for a fake client ID."
+    },
+    {
+      "id": "p2",
+      "kind": "oidc_discovery",
+      "target_url": "https://example.com/.well-known/openid-configuration",
+      "ran_at": "2026-10-28T10:00:01Z",
+      "ok": true,
+      "http_status": 200,
+      "summary": "Lists code_challenge_methods_supported: S256."
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "generated_at": "2026-10-28T10:00:02Z",
+    "generated_by": "library",
+    "model": null,
+    "sources_count": 1,
+    "run_seconds": null
+  }
+}
