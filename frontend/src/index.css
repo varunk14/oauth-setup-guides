@@ -687,10 +687,11 @@ button:hover {
   gap: 0.35rem 1rem;
   flex-wrap: wrap;
   align-items: baseline;
-  margin: 2rem 0 0;
-  padding: 0.85rem 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  margin: 1.25rem 0 0;
+  padding: 0.8rem 1.35rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   font-size: 0.875rem;
 }
 
