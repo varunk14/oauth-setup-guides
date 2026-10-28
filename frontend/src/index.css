@@ -108,6 +108,7 @@ code {
 }
 
 .site-nav {
+  white-space: nowrap;
   display: flex;
   gap: 1.25rem;
   font-size: 0.9rem;
@@ -128,6 +129,7 @@ code {
 }
 
 .brand {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -137,6 +139,7 @@ code {
 }
 
 .brand-mark {
+  flex: none;
   width: 1.1rem;
   height: 1.1rem;
   border-radius: 5px;
@@ -198,6 +201,22 @@ h3 {
   word-break: break-all;
 }
 
+.columns li,
+.claims li,
+.steps p,
+.summary,
+.panel p,
+.panel li,
+.card p,
+td {
+  overflow-wrap: anywhere;
+}
+
+.glance-item,
+.cards > li {
+  min-width: 0;
+}
+
 .nowrap {
   white-space: nowrap;
 }
@@ -240,8 +259,26 @@ button:hover {
 }
 
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
   font-size: 0.9rem;
   font-weight: 550;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+a.button:hover {
+  border-color: var(--ink-soft);
 }
 
 /* Library */
@@ -388,6 +425,17 @@ button:hover {
 .card .muted {
   font-size: 0.875rem;
   margin-top: 0.15rem;
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+}
+
+.card-meta .pill.live {
+  margin-left: 0;
 }
 
 .facts {
@@ -607,17 +655,31 @@ button:hover {
   background: var(--ink);
   border-color: var(--ink);
   color: #fff;
-  text-decoration: none;
-  display: inline-block;
 }
 
 .button.primary:hover {
   background: #000;
+  border-color: #000;
+  color: #fff;
 }
 
 .button.primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.panel.ready {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-color: #d8eadd;
+  background: #f6fbf7;
+}
+
+.panel.ready p {
+  margin-top: 0.25rem;
 }
 
 .progress-steps {
@@ -921,6 +983,7 @@ section[aria-labelledby] h2[id] {
 }
 
 .columns > div {
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1002,6 +1065,18 @@ th {
 @media (max-width: 40rem) {
   main {
     padding-top: 1.5rem;
+  }
+
+  .brand {
+    font-size: 0.95rem;
+  }
+
+  .site-nav {
+    gap: 0.9rem;
+  }
+
+  .hide-small {
+    display: none;
   }
 
   .glance {

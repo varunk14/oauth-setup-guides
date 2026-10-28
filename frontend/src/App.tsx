@@ -14,13 +14,17 @@ function App() {
         <div className="container">
           <Link to="/" className="brand">
             <span className="brand-mark" aria-hidden="true" />
-            OAuth App Setup Guides
+            <span>
+              OAuth<span className="hide-small"> App Setup</span> Guides
+            </span>
           </Link>
           <nav className="site-nav" aria-label="Main">
             <NavLink to="/" end>
               Library
             </NavLink>
-            <NavLink to="/generate">Investigate an app</NavLink>
+            <NavLink to="/generate">
+              Investigate<span className="hide-small"> an app</span>
+            </NavLink>
           </nav>
         </div>
       </header>

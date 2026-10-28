@@ -121,8 +121,8 @@ export default function LibraryPage() {
                 </h2>
                 <DifficultyBadge level={g.difficulty} />
               </div>
-              <p className="muted">
-                {g.category}
+              <p className="muted card-meta">
+                <span>{g.category}</span>
                 {g.generated_by === 'live_agent' && <span className="pill live">Live agent</span>}
               </p>
               <dl className="facts">

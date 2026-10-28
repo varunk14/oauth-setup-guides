@@ -153,14 +153,14 @@ export default function GeneratePage() {
       )}
 
       {result?.type === 'done' && !result.cached && (
-        <section className="panel" role="status">
-          <h2>Your guide is ready</h2>
-          <p>It has its own link you can share.</p>
-          <p>
-            <Link className="button primary" to={`/guides/${result.slug}`}>
-              Open the guide
-            </Link>
-          </p>
+        <section className="panel ready" role="status">
+          <div>
+            <h2>Your guide is ready</h2>
+            <p>It has its own link you can share.</p>
+          </div>
+          <Link className="button primary" to={`/guides/${result.slug}`}>
+            Open the guide <span aria-hidden="true">&rarr;</span>
+          </Link>
         </section>
       )}
       {result?.type === 'no_oauth' && (
