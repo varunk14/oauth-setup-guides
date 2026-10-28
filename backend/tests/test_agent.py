@@ -73,7 +73,11 @@ def test_happy_path_saves_guide_and_enforces_evidence(tmp_path: Path) -> None:
     assert guide.meta.generated_by == "live_agent"
     assert guide.meta.model == "primary:fake-model"
     assert guide.composio_note.managed_oauth == "unknown"
-    assert any("authorize" in line for line in guide.agent_vs_human.agent_did)
+    did = guide.agent_vs_human.agent_did
+    assert any(
+        line.startswith("Authorize endpoint (auth.acme.example/oauth/authorize)") for line in did
+    )
+    assert any("OpenID discovery document" in line and "PKCE methods: S256" in line for line in did)
     assert any("Sources disagree" in u for u in guide.unverified)
     # A conclusive endpoint check the writer ignored is added as a TESTED note by code.
     auto = [n for n in guide.nuances if n.evidence.probe_ids == ["oauth-meta"]]

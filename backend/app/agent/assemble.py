@@ -403,16 +403,39 @@ def fix_time(time: TimeEstimate) -> TimeEstimate:
 # -------------------------------------------------------------- assemble
 
 
+PROBE_LABELS = {
+    "oidc_discovery": "OpenID discovery document",
+    "oauth_metadata": "OAuth server metadata",
+    "authorize_endpoint": "Authorize endpoint",
+    "url_reachable": "Page",
+}
+
+
+def _probe_line(p: Probe) -> str:
+    parts = urlsplit(str(p.target_url))
+    where = f"{parts.hostname}{parts.path}".rstrip("/")
+    result = p.summary
+    if p.outcome == "confirmed" and p.kind in ("oidc_discovery", "oauth_metadata"):
+        pkce = re.search(r"PKCE methods: [^;]+", p.summary)
+        result = "Published." + (f" {pkce.group(0)}." if pkce else "")
+    return f"{PROBE_LABELS[p.kind]} ({where}): {p.outcome.replace('_', ' ')}. {result}"
+
+
 def agent_did(
     probes: list[Probe], searches: int, sources: list[Source], provider: str
 ) -> list[str]:
     lines = [
-        f"Researched the official docs with {provider} ({searches} web searches) and kept "
-        f"{len(sources)} sources, each checked to load."
+        f"Researched the official docs ({searches} web searches) and kept {len(sources)} "
+        "sources, each checked to load."
     ]
-    for p in probes:
-        lines.append(f"Checked {p.target_url}: {p.outcome.replace('_', ' ')}. {p.summary}")
+    lines.extend(_probe_line(p) for p in probes)
     return lines
+
+
+def short_category(category: str) -> str:
+    """Keep categories card-sized: 'Video conferencing and ... platform' -> 'Video conferencing'."""
+    text = re.split(r",| and | & |;|\(", category or "")[0].strip() or "Other"
+    return " ".join(text.split()[:3])[:32].strip() or "Other"
 
 
 def assemble(
@@ -471,7 +494,7 @@ def assemble(
             "name": draft.app.name,
             "slug": slug,
             "website": website,
-            "category": draft.app.category or "Other",
+            "category": short_category(draft.app.category),
             "docs_urls": docs[:5],
             "developer_console_url": console if is_http_url(console) else None,
         },

@@ -52,4 +52,6 @@ custom auth config in Composio with the client ID and secret.
 
 Every requirement and the review_process must have is_required: "yes", "no" or "conditional".
 
+app.category is 1-3 words, for example "CRM", "Email", "Video meetings".
+
 Put everything you could not confirm in "unverified", in plain words."""

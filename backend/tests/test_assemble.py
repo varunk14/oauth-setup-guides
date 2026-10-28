@@ -2,7 +2,13 @@
 
 from typing import Any
 
-from app.agent.assemble import composio_status, draft_schema, normalize_draft, registrable_domain
+from app.agent.assemble import (
+    composio_status,
+    draft_schema,
+    normalize_draft,
+    registrable_domain,
+    short_category,
+)
 from tests.agent_fakes import draft
 
 
@@ -57,3 +63,10 @@ def test_composio_status_from_snapshot() -> None:
     assert composio_status("Calendly", "https://calendly.com") == "yes"
     assert composio_status("Xero", "https://www.xero.com") == "no"
     assert composio_status("Totally Unknown Tool", "https://unknown.example") == "unknown"
+
+
+def test_short_category() -> None:
+    assert short_category("Video conferencing and communications platform") == "Video conferencing"
+    assert short_category("Cloud storage and file collaboration") == "Cloud storage"
+    assert short_category("CRM") == "CRM"
+    assert short_category("") == "Other"
