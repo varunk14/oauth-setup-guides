@@ -1,0 +1,633 @@
+{
+  "app": {
+    "name": "Instagram (Meta)",
+    "slug": "meta-instagram",
+    "website": "https://www.instagram.com/",
+    "category": "Social media",
+    "docs_urls": [
+      "https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/business-login",
+      "https://developers.facebook.com/docs/instagram-platform/create-an-instagram-app",
+      "https://developers.facebook.com/docs/app-review/submission-guide"
+    ],
+    "developer_console_url": "https://developers.facebook.com/apps"
+  },
+  "summary": "Hard if your agent must act on Instagram accounts you do not own: each instagram_business_* permission needs Advanced Access through Meta App Review, and the app must be connected to a business that has passed Business Verification before it can be published. Meta asks for a working, testable app, a privacy policy, a written reason and a screen recording for every permission. Meta says a decision usually comes within a week of submitting, but Business Verification and any rejected permissions add time. Creating the Business-type app and setting up Instagram business login takes about an hour, and in Development mode it works at once for accounts that have a role on the app. Only Instagram professional (business or creator) accounts can connect. Composio's managed Instagram app lets you skip all of this while prototyping.",
+  "difficulty": {
+    "level": "Hard",
+    "reason": "Self-serve app creation, but every permission used by people without a role on the app needs App Review with screen recordings, plus Business Verification before publishing and an annual Data Use Checkup. No paid security audit, which keeps it below Gmail.",
+    "evidence": {
+      "label": "SOURCED",
+      "source_ids": [
+        "s2",
+        "s3",
+        "s4",
+        "s5"
+      ],
+      "note": "The requirements are sourced; the Hard rating is our judgement from them."
+    }
+  },
+  "time": {
+    "hands_on": "1 hour to 2 days",
+    "hands_on_minutes_min": 45,
+    "hands_on_minutes_max": 960,
+    "approval_wait": "1-4 weeks",
+    "approval_wait_days_min": 5,
+    "approval_wait_days_max": 30,
+    "detail": "Hands-on: About 1 hour to create the app and connect a test account; 1-2 days to prepare the App Review submission (privacy policy, recordings, a written reason per permission). Approval wait: About 1-4 weeks: Meta says a review decision usually comes within a week, plus Business Verification (no official duration found) and any resubmission after rejections.",
+    "evidence": {
+      "label": "INFERRED",
+      "source_ids": [
+        "s4"
+      ],
+      "note": "Meta's submission walkthrough says you 'should receive a decision within a week'. The upper range adds Business Verification and one resubmission; that part is our estimate. API calls must also be logged (within 2 days) before you can request Advanced Access."
+    }
+  },
+  "requirements": [
+    {
+      "name": "Meta developer account and a Business-type app",
+      "required": "yes",
+      "detail": "Choose use case Other, then app type Business; only Business apps can add the Instagram product. One person can be developer or admin on at most 15 apps.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2"
+        ]
+      }
+    },
+    {
+      "name": "Instagram professional account",
+      "required": "yes",
+      "detail": "Business Login for Instagram gives access to Instagram professional account data. Personal accounts cannot be connected through this API.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1"
+        ],
+        "note": "The login doc talks about professional account data; the create-app page only says test accounts must be public. We read this as professional (business or creator) accounts only."
+      }
+    },
+    {
+      "name": "Business Verification",
+      "required": "yes",
+      "detail": "The app must be connected to a business that has completed Business Verification before it can be published; App Review may also prompt for it.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s4",
+          "s5"
+        ]
+      }
+    },
+    {
+      "name": "Privacy policy URL, app icon, category and contact email",
+      "required": "yes",
+      "detail": "Set in Settings > Basic. 1024x1024 icon without Meta trademarks. The privacy policy is shown to users at login.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "name": "Deauthorize callback and data deletion request URLs",
+      "required": "yes",
+      "detail": "Added in Business login settings alongside the OAuth redirect URIs.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2"
+        ]
+      }
+    },
+    {
+      "name": "A testable app and screen recordings",
+      "required": "yes",
+      "detail": "Meta tests the app itself using its own test accounts. Each permission needs a recording (1080p or better, English UI) showing a user granting it and the app using it. A permission without a recording is not approved.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s3",
+          "s4"
+        ]
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "name": "instagram_business_basic",
+      "purpose": "Basic profile and media of the professional account. Also needed to refresh long-lived tokens.",
+      "sensitivity": "sensitive",
+      "triggers_review": true,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s5"
+        ],
+        "note": "Meta does not use Google-style sensitivity tiers; we label these sensitive because each needs Advanced Access via App Review to be used by people without a role on the app."
+      }
+    },
+    {
+      "name": "instagram_business_content_publish",
+      "purpose": "Publish posts to the account.",
+      "sensitivity": "sensitive",
+      "triggers_review": true,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s5"
+        ]
+      }
+    },
+    {
+      "name": "instagram_business_manage_comments",
+      "purpose": "Read and manage comments.",
+      "sensitivity": "sensitive",
+      "triggers_review": true,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s5"
+        ]
+      }
+    },
+    {
+      "name": "instagram_business_manage_messages",
+      "purpose": "Read and send direct messages. Requesting it automatically adds the Human Agent feature to the review.",
+      "sensitivity": "sensitive",
+      "triggers_review": true,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s2",
+          "s5"
+        ]
+      }
+    },
+    {
+      "name": "instagram_business_manage_insights",
+      "purpose": "Read account and media insights.",
+      "sensitivity": "sensitive",
+      "triggers_review": true,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s5"
+        ]
+      }
+    }
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "title": "Decide whether you need your own app yet",
+      "action": "Composio has a managed Instagram app. Stay on it while prototyping. Switch to your own Meta app when you need your own name at login, permissions Composio does not request, or your own quota.",
+      "where_url": "https://docs.composio.dev/docs/authentication/custom-app-vs-managed-app",
+      "who": "either",
+      "expected_result": "A decision: managed auth for now, or your own Meta app.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s7",
+          "s9"
+        ]
+      }
+    },
+    {
+      "order": 2,
+      "title": "List the permissions your agent needs",
+      "action": "Map each agent action to an instagram_business_* permission and drop the rest. Meta pre-selects five; remove any you will not use, since each one needs its own review evidence. Read each permission's Allowed Usage section.",
+      "where_url": "https://developers.facebook.com/docs/instagram-platform/create-an-instagram-app",
+      "who": "agent",
+      "expected_result": "A short permission list with one reason per permission for the human to review.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 3,
+      "title": "Create a Business-type app and add Instagram",
+      "action": "In the App Dashboard click Create App, choose use case Other, app type Business, enter name and contact email. Add the Instagram product with API setup with Instagram login.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "An app in Development mode with the Instagram product and an Instagram App ID and Instagram App Secret.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s1"
+        ]
+      }
+    },
+    {
+      "order": 4,
+      "title": "Register Composio's callback in Business login settings",
+      "action": "In Instagram > API setup with Instagram login > Set up Instagram business login > Business login settings, add https://backend.composio.dev/api/v3/toolkits/auth/callback as an OAuth redirect URI, plus your deauthorize callback and data deletion URLs. Check the saved list: the dashboard may add a trailing slash.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "Redirect URI saved exactly as Composio sends it.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s2",
+          "s8"
+        ]
+      }
+    },
+    {
+      "order": 5,
+      "title": "Create a custom auth config in Composio",
+      "action": "In the Composio dashboard click Create Auth Config, pick Instagram, choose OAuth2, turn on Use your own developer credentials, paste the Instagram App ID and Instagram App Secret (not the Facebook app ID), set the same redirect URI and your permissions. Pass the auth config ID in your session's auth_configs.",
+      "where_url": "https://dashboard.composio.dev/",
+      "who": "human",
+      "expected_result": "An auth config ID (ac_...) for Instagram.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8",
+          "s9",
+          "s1"
+        ],
+        "note": "Which Meta credentials Composio's Instagram toolkit expects (Instagram login vs Facebook login app ID) was not confirmed; check the field labels in the dashboard."
+      }
+    },
+    {
+      "order": 6,
+      "title": "Add testers and make a real API call per permission",
+      "action": "Add a public Instagram professional account as a tester under App Roles, connect it through a Composio Connect Link, and make at least one successful call with each permission. Calls must be within 30 days before you submit; they show up within 2 days.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "The Request advanced access buttons become active in App Review > Permissions and Features.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 7,
+      "title": "Complete Business Verification",
+      "action": "Connect the app to your business in App settings > Basic and complete Business Verification if not already done.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "Business verified and linked to the app.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 8,
+      "title": "Prepare the review material",
+      "action": "Draft a distinct usage description per permission (no copy and paste), test instructions for Meta's reviewers, and a recording script. The human records each screen recording (English UI, 1080p, no audio needed) and publishes the privacy policy.",
+      "who": "either",
+      "expected_result": "One description and one recording per permission, plus access instructions.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 9,
+      "title": "Submit for App Review",
+      "action": "In App Review > Permissions and Features request advanced access for each permission, answer data handling questions, complete app settings and app verification details, add descriptions and recordings, then Submit for Review and accept the Platform Onboarding Terms.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "Submission queued; Meta says a decision usually arrives within a week.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 10,
+      "title": "Switch the app to Live mode",
+      "action": "Only after approval, flip the app mode toggle to Live. In Live mode only approved permissions work, even for role users. Do the annual Data Use Checkup when asked.",
+      "where_url": "https://developers.facebook.com/apps",
+      "who": "human",
+      "expected_result": "Any Instagram professional account can connect through your Composio auth config.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4",
+          "s6",
+          "s5"
+        ]
+      }
+    }
+  ],
+  "review_process": {
+    "required": "conditional",
+    "trigger": "Required for any permission used by people without a role on the app or on a business that has claimed it (Advanced Access). Not needed if only role users connect, using Standard Access.",
+    "what_to_submit": [
+      "Advanced access request per permission (after a logged successful API call)",
+      "Business Verification",
+      "Data handling answers",
+      "App settings: icon, privacy policy URL, app purpose, category, primary contact",
+      "Instructions for how Meta's reviewers can access and test the app",
+      "A separate usage description and screen recording for each permission"
+    ],
+    "typical_wait": "Meta says a decision usually comes within a week of submitting; Business Verification and resubmissions extra",
+    "common_rejections": [
+      "Reviewers cannot access or test the app (whole submission rejected)",
+      "A permission has no screen recording or the recording does not show it in use",
+      "Use does not match the permission's Allowed Usage",
+      "Copied or vague usage descriptions",
+      "Personal login credentials supplied for testing"
+    ],
+    "evidence": {
+      "label": "SOURCED",
+      "source_ids": [
+        "s3",
+        "s4",
+        "s5"
+      ]
+    }
+  },
+  "blockers": [
+    {
+      "blocker": "Development mode only works for people with a role on the app",
+      "how_to_get_past": "Pass App Review for each permission (Advanced Access), then switch to Live mode.",
+      "contact": null,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s5",
+          "s6"
+        ]
+      }
+    },
+    {
+      "blocker": "Business Verification required before publishing",
+      "how_to_get_past": "Verify the business that owns the app in Meta Business settings and connect it under App settings > Basic.",
+      "contact": "Meta Business Help Center",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s2",
+          "s5"
+        ]
+      }
+    },
+    {
+      "blocker": "Request advanced access button greyed out",
+      "how_to_get_past": "Make at least one successful API call with each permission in the last 30 days and wait up to 2 days for it to be logged.",
+      "contact": null,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "blocker": "Users with personal Instagram accounts cannot connect",
+      "how_to_get_past": "Ask users to switch to a professional (business or creator) account in the Instagram app.",
+      "contact": null,
+      "evidence": {
+        "label": "INFERRED",
+        "source_ids": [
+          "s1"
+        ],
+        "note": "Follows from the login doc covering professional account data only; the switching advice is ours."
+      }
+    }
+  ],
+  "agent_vs_human": {
+    "agent_did": [
+      "Fetched the facebook.com OpenID discovery document. It exists but describes Facebook Login OIDC, not the Instagram API with Instagram login flow, and lists no PKCE methods.",
+      "Called https://www.instagram.com/oauth/authorize. Result inconclusive: HTTP 200 but no visible client error (page likely rendered by JavaScript), so it proves nothing about client checking.",
+      "Checked that the Meta App Dashboard and the Business Login for Instagram doc page load."
+    ],
+    "agent_can": [
+      "Pick the minimum instagram_business_* permissions",
+      "Draft usage descriptions, reviewer test instructions, recording scripts and privacy policy text for a human to review",
+      "Check Composio's managed-auth list and Meta's docs for changes"
+    ],
+    "human_must": [
+      "Log in to Meta for Developers and create the Business app",
+      "Configure business login settings and redirect URIs",
+      "Add tester accounts and make the first API calls",
+      "Complete Business Verification",
+      "Record screen recordings",
+      "Submit for App Review and accept the Platform Onboarding Terms",
+      "Switch the app to Live and complete the annual Data Use Checkup",
+      "Create the custom auth config in the Composio dashboard"
+    ]
+  },
+  "nuances": [
+    {
+      "topic": "token_expiry",
+      "detail": "Login returns a short-lived token. Exchanging it server side gives a long-lived token valid for 60 days. It can be refreshed for another 60 days if it is at least 24 hours old, still valid, and the user granted instagram_business_basic. A token not refreshed within 60 days expires for good. The authorization code is valid for 1 hour, once.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "topic": "refresh_tokens",
+      "detail": "There is no separate refresh token; the long-lived access token itself is refreshed at graph.instagram.com/refresh_access_token.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "topic": "sandbox_vs_production",
+      "detail": "Development mode: only role users, test data visible only to them. Live mode: anyone, but only approved permissions, even for role users. Test posts made in Development mode become visible to everyone after going Live.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s6",
+          "s4"
+        ]
+      }
+    },
+    {
+      "topic": "redirect_uris",
+      "detail": "The redirect_uri must exactly match a saved OAuth redirect URI; the dashboard may add a trailing slash. Strip the trailing #_ from the returned code.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1"
+        ]
+      }
+    },
+    {
+      "topic": "pkce",
+      "detail": "Facebook's discovery document lists no PKCE methods, but that document is for Facebook Login OIDC, not Instagram login. Whether Instagram login supports PKCE is not shown by our probes.",
+      "evidence": {
+        "label": "TESTED",
+        "probe_ids": [
+          "oidc"
+        ],
+        "note": "Only the Facebook Login document was tested; nothing is claimed about the Instagram flow."
+      }
+    },
+    {
+      "topic": "other",
+      "detail": "Old scope names (business_basic and so on) were deprecated on January 27, 2025; use the instagram_business_* names.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1"
+        ]
+      }
+    }
+  ],
+  "unverified": [
+    "Real-world App Review wait: Meta says within a week; longer community reports (about 20 days) were not checked against a source we read.",
+    "How long Business Verification takes; no official duration found.",
+    "Whether the Instagram authorize endpoint validates client IDs; our probe was inconclusive.",
+    "Whether Instagram login supports PKCE.",
+    "Which Meta login type and credentials Composio's Instagram toolkit expects in a custom auth config.",
+    "Which permissions Composio's managed Instagram app requests by default."
+  ],
+  "composio_note": {
+    "managed_oauth": "yes",
+    "detail": "Instagram is in Composio's managed OAuth list (snapshot 2026-10-28). With the managed app your users log in to Composio's app, which Composio registers and maintains, so you can skip App Review and Business Verification while prototyping. You need your own Meta app for your own name at login, extra permissions or dedicated quota, and then you inherit the full App Review path above. Note that Meta Ads and Threads are bring-your-own only in Composio.",
+    "snapshot_date": "2026-10-28",
+    "evidence": {
+      "label": "SOURCED",
+      "source_ids": [
+        "s9",
+        "s7"
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-instagram-login/business-login",
+      "title": "Business Login for Instagram",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s2",
+      "url": "https://developers.facebook.com/docs/instagram-platform/create-an-instagram-app",
+      "title": "Create an Instagram app",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s3",
+      "url": "https://developers.facebook.com/documentation/resp-plat-initiatives/individual-processes/app-review",
+      "title": "App Review process",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s4",
+      "url": "https://developers.facebook.com/docs/app-review/submission-guide",
+      "title": "App Review submission walkthrough",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s5",
+      "url": "https://developers.facebook.com/docs/graph-api/overview/access-levels",
+      "title": "Access Levels",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s6",
+      "url": "https://developers.facebook.com/documentation/development/build-and-test/app-modes",
+      "title": "App Modes",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s7",
+      "url": "https://docs.composio.dev/toolkits/managed-auth",
+      "title": "Composio: Managed OAuth apps",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s8",
+      "url": "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs",
+      "title": "Composio: Custom Auth Configs",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s9",
+      "url": "https://docs.composio.dev/docs/authentication/custom-app-vs-managed-app",
+      "title": "Composio: Managed vs custom auth",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    }
+  ],
+  "probes": [
+    {
+      "id": "oidc",
+      "kind": "oidc_discovery",
+      "target_url": "https://www.facebook.com/.well-known/openid-configuration",
+      "ran_at": "2026-10-28T07:15:48Z",
+      "outcome": "confirmed",
+      "http_status": 200,
+      "summary": "Metadata found. issuer=https://www.facebook.com; authorization_endpoint=https://facebook.com/dialog/oauth/; PKCE methods: not listed"
+    },
+    {
+      "id": "authorize",
+      "kind": "authorize_endpoint",
+      "target_url": "https://www.instagram.com/oauth/authorize",
+      "ran_at": "2026-10-28T07:15:48Z",
+      "outcome": "inconclusive",
+      "http_status": 200,
+      "summary": "Endpoint answered HTTP 200 on www.instagram.com, but no client error was visible. The page is likely rendered by JavaScript, which this check does not run."
+    },
+    {
+      "id": "console",
+      "kind": "url_reachable",
+      "target_url": "https://developers.facebook.com/apps",
+      "ran_at": "2026-10-28T07:15:49Z",
+      "outcome": "confirmed",
+      "http_status": 200,
+      "summary": "Page loads (HTTP 200)."
+    },
+    {
+      "id": "docs",
+      "kind": "url_reachable",
+      "target_url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login",
+      "ran_at": "2026-10-28T07:15:50Z",
+      "outcome": "confirmed",
+      "http_status": 200,
+      "summary": "Page loads (HTTP 200 after redirect to developers.facebook.com)."
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "generated_at": "2026-10-28T12:00:00Z",
+    "generated_by": "library",
+    "model": null,
+    "sources_count": 9,
+    "run_seconds": null
+  }
+}

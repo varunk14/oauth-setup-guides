@@ -1,0 +1,627 @@
+{
+  "app": {
+    "name": "Salesforce",
+    "slug": "salesforce",
+    "website": "https://www.salesforce.com",
+    "category": "CRM",
+    "docs_urls": [
+      "https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5",
+      "https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_web_server_flow.htm&type=5",
+      "https://help.salesforce.com/s/articleView?id=005228017&language=en_US&type=1"
+    ],
+    "developer_console_url": "https://login.salesforce.com"
+  },
+  "summary": "Bringing your own Salesforce OAuth app is harder than it used to be, mainly when your users sit in many different Salesforce orgs. As of Spring '26 Salesforce has restricted creating new connected apps (existing ones keep working; new ones need a Support request, and Salesforce says Support will stop enabling this in future releases), so new integrations should use External Client Apps. A local External Client App takes under two hours to set up and needs no review, but Salesforce says it is available only in the org where you create it. To reach other orgs you package it in a managed package (second-generation recommended) and each customer installs that package. There is no mandatory app review unless you list on AppExchange. Composio's managed Salesforce app works today, so most builders should start there and only build their own app for branding, custom scopes, own rate limits or private My Domain instances.",
+  "difficulty": {
+    "level": "Hard",
+    "reason": "Single-org setup is Medium: a form in App Manager plus OAuth settings. Serving many customer orgs is Hard: connected app creation is restricted, a local External Client App only works in its own org, and distribution needs a managed package with a Dev Hub and Salesforce DX project that each customer installs.",
+    "evidence": {
+      "label": "INFERRED",
+      "source_ids": [
+        "s2",
+        "s3",
+        "s4",
+        "s6"
+      ],
+      "note": "Level is our judgement from Salesforce's own pages on the Spring '26 restriction, local vs packaged External Client Apps and packaging."
+    }
+  },
+  "time": {
+    "hands_on": "45-120 min per org",
+    "hands_on_minutes_min": 45,
+    "hands_on_minutes_max": 120,
+    "approval_wait": "None",
+    "approval_wait_days_min": 0,
+    "approval_wait_days_max": 0,
+    "detail": "Hands-on: 45-120 min for a local External Client App in one org wired to Composio. Packaging for many orgs adds days of developer work (Dev Hub, namespace, Salesforce DX project, package versions) that we did not estimate.. Approval wait: None from Salesforce for a local or packaged External Client App. A Support request is needed only if you insist on a new connected app (wait not stated). AppExchange security review applies only if you list; we did not confirm its duration.",
+    "evidence": {
+      "label": "INFERRED",
+      "source_ids": [
+        "s2",
+        "s4",
+        "s6"
+      ],
+      "note": "Salesforce's pages describe no review step for creating or packaging an External Client App. Hands-on minutes are our estimate from the number of setup screens."
+    }
+  },
+  "requirements": [
+    {
+      "name": "A Salesforce org with a supported edition",
+      "required": "yes",
+      "detail": "External Client Apps are available in Lightning Experience in Professional, Enterprise, Performance, Unlimited and Developer Editions. For testing, a Developer Edition org is the usual choice.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ],
+        "note": "That Developer Edition orgs are free is common knowledge but we could not load the signup page (HTTP 403)."
+      }
+    },
+    {
+      "name": "Permission to create External Client Apps",
+      "required": "yes",
+      "detail": "The user needs the Create, edit, and delete External Client Apps permission.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "name": "HTTPS callback URL",
+      "required": "yes",
+      "detail": "Callback URLs must use HTTPS or a custom URI scheme; put several on separate lines. Use Composio's https://backend.composio.dev/api/v3/toolkits/auth/callback.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s5",
+          "s10"
+        ]
+      }
+    },
+    {
+      "name": "Managed package with Dev Hub (multi-org only)",
+      "required": "conditional",
+      "detail": "Only packaged External Client Apps can be deployed to other orgs. Salesforce recommends second-generation managed packages with a Dev Hub org and a Salesforce DX project; first-generation managed packages are also allowed.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s6",
+          "s3"
+        ]
+      }
+    },
+    {
+      "name": "Salesforce Support approval for a new connected app",
+      "required": "conditional",
+      "detail": "Only if you must create a new connected app instead of an External Client App. Salesforce warns Support will not be able to enable this in future releases.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s2"
+        ]
+      }
+    },
+    {
+      "name": "Composio custom auth config",
+      "required": "conditional",
+      "detail": "Only needed if you use your own app instead of Composio's managed Salesforce app.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s10",
+          "s11"
+        ]
+      }
+    }
+  ],
+  "scopes": [
+    {
+      "name": "api",
+      "purpose": "Access the signed-in user's data through Salesforce APIs (REST, SOQL, Connect REST).",
+      "sensitivity": "sensitive",
+      "triggers_review": false,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8"
+        ],
+        "note": "No scope triggers a Salesforce review; data access is still limited by the user's own permissions. Sensitivity rating is ours."
+      }
+    },
+    {
+      "name": "refresh_token (same as offline_access)",
+      "purpose": "Lets the app get a refresh token so the agent keeps working after the access token expires.",
+      "sensitivity": "standard",
+      "triggers_review": false,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8",
+          "s7"
+        ],
+        "note": "Salesforce returns refresh_token only if the app has this scope."
+      }
+    },
+    {
+      "name": "id (or profile, email)",
+      "purpose": "Read basic identity of the connected user.",
+      "sensitivity": "standard",
+      "triggers_review": false,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8"
+        ]
+      }
+    },
+    {
+      "name": "openid",
+      "purpose": "Get an ID token with the user's unique identifier.",
+      "sensitivity": "standard",
+      "triggers_review": false,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8"
+        ]
+      }
+    },
+    {
+      "name": "full",
+      "purpose": "All data the user can reach and all other scopes. Avoid it: it does not return a refresh token.",
+      "sensitivity": "restricted",
+      "triggers_review": false,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s8"
+        ],
+        "note": "Sensitivity rating is ours."
+      }
+    }
+  ],
+  "steps": [
+    {
+      "order": 1,
+      "title": "Get an org to build the app in",
+      "action": "Use a Developer Edition org for testing, or the org that will own the app. For multi-org distribution, plan to use (or link to) a Dev Hub org.",
+      "who": "human",
+      "expected_result": "You can sign in to Setup with permission to create External Client Apps.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4",
+          "s6"
+        ]
+      }
+    },
+    {
+      "order": 2,
+      "title": "Choose External Client App, local or packaged",
+      "action": "Do not plan on a new connected app; creation is restricted since Spring '26. Pick Local if only your own org will connect, Packaged if customers in other orgs will connect.",
+      "who": "either",
+      "expected_result": "A clear decision: local (single org) or packaged (multi-org).",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s2",
+          "s3"
+        ]
+      }
+    },
+    {
+      "order": 3,
+      "title": "Create the External Client App",
+      "action": "In Setup, open App Manager and click New External Client App. Enter a name, API name and contact email, and set Distribution State.",
+      "where_url": "https://login.salesforce.com",
+      "who": "human",
+      "expected_result": "The app appears in the External Client App Manager.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s4"
+        ]
+      }
+    },
+    {
+      "order": 4,
+      "title": "Enable OAuth with Composio's callback",
+      "action": "Enable the OAuth plugin. Set Callback URL to https://backend.composio.dev/api/v3/toolkits/auth/callback, select the api, refresh_token/offline_access and id scopes, and keep Require Secret for Web Server Flow on.",
+      "who": "human",
+      "expected_result": "OAuth settings saved with the callback URL and scopes.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s5",
+          "s8",
+          "s10"
+        ]
+      }
+    },
+    {
+      "order": 5,
+      "title": "Decide on Require PKCE",
+      "action": "Salesforce recommends PKCE with the web server flow. Only turn on Require PKCE if Composio sends code_challenge for Salesforce; otherwise the flow is blocked.",
+      "who": "human",
+      "expected_result": "PKCE setting matches what Composio sends.",
+      "evidence": {
+        "label": "INFERRED",
+        "source_ids": [
+          "s5",
+          "s7"
+        ],
+        "probe_ids": [
+          "oidc"
+        ],
+        "note": "Salesforce states Require PKCE blocks flows without PKCE. Whether Composio sends PKCE for Salesforce is unverified."
+      }
+    },
+    {
+      "order": 6,
+      "title": "Copy consumer key and secret",
+      "action": "In App Manager, find the app, choose View, then Manage Consumer Details. Verify your identity if asked and copy the consumer key and secret.",
+      "who": "human",
+      "expected_result": "You have the client ID (consumer key) and client secret (consumer secret).",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s7"
+        ]
+      }
+    },
+    {
+      "order": 7,
+      "title": "Create a custom auth config in Composio",
+      "action": "In the Composio dashboard click Create Auth Config, pick Salesforce, choose OAuth2, turn on Use your own developer credentials, paste the consumer key and secret, set the Redirect URI to the Composio callback, and set your instance or subdomain if the toolkit asks. Copy the auth config ID.",
+      "where_url": "https://dashboard.composio.dev",
+      "who": "human",
+      "expected_result": "An auth config ID such as ac_... is shown.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s10",
+          "s11"
+        ]
+      }
+    },
+    {
+      "order": 8,
+      "title": "Package the app for other orgs (multi-org only)",
+      "action": "Set Distribution State to Packaged, add the app to a managed package (2GP with a Dev Hub recommended), and have each customer install the package in their org. Set default policies in the Package Default tab.",
+      "who": "human",
+      "expected_result": "Customer orgs have the app installed and their users can authorize it.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s6",
+          "s3"
+        ]
+      }
+    },
+    {
+      "order": 9,
+      "title": "Test a connection",
+      "action": "Pass the auth config ID in your session, connect a test user (use test.salesforce.com or the sandbox My Domain for sandboxes), and run one read query. Check that a refresh token was issued.",
+      "who": "either",
+      "expected_result": "The connected account works and instance_url points to the user's org.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s9",
+          "s7",
+          "s11"
+        ],
+        "probe_ids": [
+          "authorize"
+        ],
+        "note": "Our probe confirmed the production authorize endpoint rejects an unknown client ID with invalid_client, which is the error you will see if the consumer key is wrong."
+      }
+    }
+  ],
+  "review_process": {
+    "required": "no",
+    "trigger": "No Salesforce review is needed to create, use or package an External Client App. A new connected app needs a Support request. An AppExchange listing has its own security review, which is optional unless you want to list.",
+    "what_to_submit": [],
+    "typical_wait": "none for External Client Apps",
+    "common_rejections": [],
+    "evidence": {
+      "label": "INFERRED",
+      "source_ids": [
+        "s2",
+        "s4",
+        "s6"
+      ],
+      "note": "None of the Salesforce pages we read mention a review for External Client Apps. AppExchange security review details were not checked."
+    }
+  },
+  "blockers": [
+    {
+      "blocker": "New connected apps cannot be created since Spring '26, in the UI or the Metadata API.",
+      "how_to_get_past": "Use an External Client App. If you truly need a connected app, ask Salesforce Support, which Salesforce says will not be possible in future releases. Existing connected apps keep working and can still be installed.",
+      "contact": "Salesforce Support via https://help.salesforce.com",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s1",
+          "s2"
+        ]
+      }
+    },
+    {
+      "blocker": "A local External Client App is available only in the org where you created it.",
+      "how_to_get_past": "Switch Distribution State to Packaged and ship it in a managed package that each customer installs, or stay on Composio's managed Salesforce app.",
+      "contact": null,
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s3",
+          "s4",
+          "s6"
+        ]
+      }
+    },
+    {
+      "blocker": "Group and Essentials editions are not listed for External Client Apps.",
+      "how_to_get_past": "Customers on those editions may not be able to use your own app; check with Salesforce or keep them on Composio's managed app.",
+      "contact": null,
+      "evidence": {
+        "label": "INFERRED",
+        "source_ids": [
+          "s4",
+          "s1"
+        ],
+        "note": "The connected app page lists Group and Essentials; the External Client App page does not. Whether this blocks OAuth from those editions is unverified."
+      }
+    }
+  ],
+  "agent_vs_human": {
+    "agent_did": [
+      "Fetched the login.salesforce.com OpenID discovery document and found PKCE method S256 listed.",
+      "Called the authorize endpoint with a fake client ID and got HTTP 400 with invalid_client.",
+      "Checked that the External Client Apps help page loads."
+    ],
+    "agent_can": [
+      "Check Salesforce release notes for changes to External Client Apps and connected apps",
+      "Draft the scope list and callback settings for a person to enter",
+      "Prepare a Salesforce DX project and package metadata for review by a developer",
+      "Test a connected account and refresh once a person has finished OAuth"
+    ],
+    "human_must": [
+      "Sign in to Salesforce Setup and create the External Client App",
+      "Verify identity and copy the consumer key and secret",
+      "Sign in to Composio and create the custom auth config",
+      "Create and promote managed package versions and get customers to install them",
+      "Contact Salesforce Support if a new connected app is needed",
+      "Customer admins set policies such as permitted users in their own org"
+    ]
+  },
+  "nuances": [
+    {
+      "topic": "pkce",
+      "detail": "Salesforce's discovery document lists PKCE method S256, and Salesforce recommends PKCE with the web server flow. Require PKCE in the app settings blocks any flow that does not send it.",
+      "evidence": {
+        "label": "TESTED",
+        "probe_ids": [
+          "oidc"
+        ],
+        "source_ids": [
+          "s7",
+          "s5"
+        ]
+      }
+    },
+    {
+      "topic": "refresh_tokens",
+      "detail": "A refresh token is returned only when the app has the refresh_token (offline_access) scope, and never for the full scope alone. A refresh token can last until revoked or for an admin-set interval, and Salesforce requires a 30-day limit on the idle refresh token time-to-live. Require Secret for Refresh Token Flow is a separate setting.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s7",
+          "s8",
+          "s5"
+        ]
+      }
+    },
+    {
+      "topic": "sandbox_vs_production",
+      "detail": "Production users sign in through login.salesforce.com or their My Domain URL. Sandboxes use test.salesforce.com or the sandbox My Domain login URL. Local External Client Apps are not copied when a sandbox is cloned or refreshed; packaged ones are.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s9",
+          "s3"
+        ]
+      }
+    },
+    {
+      "topic": "redirect_uris",
+      "detail": "The redirect_uri must match one of the Callback URL values exactly or approval fails. Callback URLs must be HTTPS or a custom URI scheme.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s7",
+          "s5"
+        ]
+      }
+    },
+    {
+      "topic": "tenancy",
+      "detail": "Each customer is a separate org with its own instance_url, and subscriber org admins set policies for the app in their org without being able to edit its settings. Packaged apps reference the source org's global OAuth settings, so deleting the app in the source org breaks it for subscribers.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s3",
+          "s6",
+          "s7"
+        ]
+      }
+    },
+    {
+      "topic": "other",
+      "detail": "The authorize endpoint at login.salesforce.com answers an unknown client ID with HTTP 400 invalid_client, so a wrong consumer key fails fast and visibly.",
+      "evidence": {
+        "label": "TESTED",
+        "probe_ids": [
+          "authorize"
+        ]
+      }
+    },
+    {
+      "topic": "rate_limits",
+      "detail": "API calls count against each customer org's own API limits, which depend on edition and licenses. We did not check the current numbers.",
+      "evidence": {
+        "label": "UNVERIFIED"
+      }
+    }
+  ],
+  "unverified": [
+    "Whether a local External Client App's consumer key can authorize users from other orgs at all. Salesforce says local apps are available only in their own org; community write-ups (for example Nango's) reportedly say multi-org needs packaging, but we did not read them for this guide.",
+    "Whether Group and Essentials edition customers can authorize an External Client App.",
+    "AppExchange security review duration and when it is required.",
+    "How long a Support request for a new connected app takes, and until which release Support will still grant it.",
+    "Whether Composio sends PKCE for Salesforce, which decides if Require PKCE can be turned on.",
+    "How long after creation a new consumer key starts working.",
+    "API request limits per edition.",
+    "That Developer Edition orgs are still free; the signup page returned HTTP 403 to us."
+  ],
+  "composio_note": {
+    "managed_oauth": "yes",
+    "detail": "Composio lists Salesforce among its managed OAuth apps, which avoids the External Client App and packaging work entirely. Build your own app when you need your own name on the consent screen, custom scopes, a dedicated rate limit instead of shared quota, polling triggers faster than the 15-minute managed minimum, or a custom or private instance such as a customer's My Domain subdomain.",
+    "snapshot_date": "2026-10-28",
+    "evidence": {
+      "label": "SOURCED",
+      "source_ids": [
+        "s12",
+        "s11",
+        "s10"
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "s1",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.connected_app_create.htm&type=5",
+      "title": "Salesforce Help: Create a Connected App",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s2",
+      "url": "https://help.salesforce.com/s/articleView?id=005228017&language=en_US&type=1",
+      "title": "Salesforce Help: New connected apps can no longer be created in Spring '26",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s3",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5",
+      "title": "Salesforce Help: External Client Apps",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s4",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.create_a_local_external_client_app.htm&language=en_US&type=5",
+      "title": "Salesforce Help: Create an External Client App",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s5",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.configure_external_client_app_oauth_settings.htm&language=en_US&type=5",
+      "title": "Salesforce Help: Configure the External Client App OAuth Settings",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s6",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.configure_packageable_external_client_apps.htm&language=en_US&type=5",
+      "title": "Salesforce Help: Package an External Client App",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s7",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_web_server_flow.htm&type=5",
+      "title": "Salesforce Help: OAuth 2.0 Web Server Flow for Web App Integration",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s8",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_tokens_scopes.htm&language=en_US&type=5",
+      "title": "Salesforce Help: OAuth Tokens and Scopes",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s9",
+      "url": "https://help.salesforce.com/s/articleView?id=xcloud.remoteaccess_oauth_endpoints.htm&language=en_US&type=5",
+      "title": "Salesforce Help: OAuth Endpoints",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s10",
+      "url": "https://docs.composio.dev/docs/auth-configuration/custom-auth-configs",
+      "title": "Composio: Custom Auth Configs",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s11",
+      "url": "https://docs.composio.dev/docs/authentication/custom-app-vs-managed-app",
+      "title": "Composio: Managed vs custom auth",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s12",
+      "url": "https://docs.composio.dev/toolkits/managed-auth",
+      "title": "Composio: Managed OAuth apps",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    }
+  ],
+  "probes": [
+    {
+      "id": "oidc",
+      "kind": "oidc_discovery",
+      "target_url": "https://login.salesforce.com/.well-known/openid-configuration",
+      "ran_at": "2026-10-28T07:15:50Z",
+      "outcome": "confirmed",
+      "http_status": 200,
+      "summary": "Metadata found. issuer=https://login.salesforce.com; authorization_endpoint=https://login.salesforce.com/services/oauth2/authorize; token_endpoint=https://login.salesforce.com/services/oauth2/token; PKCE methods: S256"
+    },
+    {
+      "id": "authorize",
+      "kind": "authorize_endpoint",
+      "target_url": "https://login.salesforce.com/services/oauth2/authorize",
+      "ran_at": "2026-10-28T07:15:50Z",
+      "outcome": "confirmed",
+      "http_status": 400,
+      "summary": "Endpoint answered HTTP 400 on login.salesforce.com and rejected a fake client ID (matched: invalid_client)."
+    },
+    {
+      "id": "docs",
+      "kind": "url_reachable",
+      "target_url": "https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5",
+      "ran_at": "2026-10-28T07:15:52Z",
+      "outcome": "confirmed",
+      "http_status": 200,
+      "summary": "Page loads (HTTP 200 after redirect to help.salesforce.com)."
+    }
+  ],
+  "meta": {
+    "schema_version": "1",
+    "generated_at": "2026-10-28T12:00:00Z",
+    "generated_by": "library",
+    "model": null,
+    "sources_count": 12,
+    "run_seconds": null
+  }
+}
