@@ -1,0 +1,38 @@
+[
+  {
+    "id": "oidc",
+    "kind": "oidc_discovery",
+    "target_url": "https://slack.com/.well-known/openid-configuration",
+    "ran_at": "2026-10-28T07:15:46Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Metadata found. issuer=https://slack.com; authorization_endpoint=https://slack.com/openid/connect/authorize; token_endpoint=https://slack.com/api/openid.connect.token; PKCE methods: not listed"
+  },
+  {
+    "id": "authorize",
+    "kind": "authorize_endpoint",
+    "target_url": "https://slack.com/oauth/v2/authorize",
+    "ran_at": "2026-10-28T07:15:46Z",
+    "outcome": "inconclusive",
+    "http_status": 200,
+    "summary": "Endpoint answered HTTP 200 on slack.com, but no client error was visible. The page is likely rendered by JavaScript, which this check does not run."
+  },
+  {
+    "id": "console",
+    "kind": "url_reachable",
+    "target_url": "https://api.slack.com/apps",
+    "ran_at": "2026-10-28T07:15:46Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200)."
+  },
+  {
+    "id": "docs",
+    "kind": "url_reachable",
+    "target_url": "https://docs.slack.dev/authentication/installing-with-oauth",
+    "ran_at": "2026-10-28T07:15:47Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200 after redirect to docs.slack.dev)."
+  }
+]

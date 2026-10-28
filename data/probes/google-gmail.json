@@ -1,0 +1,38 @@
+[
+  {
+    "id": "oidc",
+    "kind": "oidc_discovery",
+    "target_url": "https://accounts.google.com/.well-known/openid-configuration",
+    "ran_at": "2026-10-28T07:15:47Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Metadata found. issuer=https://accounts.google.com; authorization_endpoint=https://accounts.google.com/o/oauth2/v2/auth; token_endpoint=https://oauth2.googleapis.com/token; PKCE methods: plain, S256"
+  },
+  {
+    "id": "authorize",
+    "kind": "authorize_endpoint",
+    "target_url": "https://accounts.google.com/o/oauth2/v2/auth?scope=openid",
+    "ran_at": "2026-10-28T07:15:48Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Endpoint answered HTTP 200 on accounts.google.com and rejected a fake client ID (matched: invalid_client)."
+  },
+  {
+    "id": "console",
+    "kind": "url_reachable",
+    "target_url": "https://console.cloud.google.com/auth/clients",
+    "ran_at": "2026-10-28T07:15:47Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200 after redirect to accounts.google.com)."
+  },
+  {
+    "id": "docs",
+    "kind": "url_reachable",
+    "target_url": "https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification",
+    "ran_at": "2026-10-28T07:15:48Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200)."
+  }
+]

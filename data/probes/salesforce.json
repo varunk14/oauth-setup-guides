@@ -1,0 +1,29 @@
+[
+  {
+    "id": "oidc",
+    "kind": "oidc_discovery",
+    "target_url": "https://login.salesforce.com/.well-known/openid-configuration",
+    "ran_at": "2026-10-28T07:15:50Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Metadata found. issuer=https://login.salesforce.com; authorization_endpoint=https://login.salesforce.com/services/oauth2/authorize; token_endpoint=https://login.salesforce.com/services/oauth2/token; PKCE methods: S256"
+  },
+  {
+    "id": "authorize",
+    "kind": "authorize_endpoint",
+    "target_url": "https://login.salesforce.com/services/oauth2/authorize",
+    "ran_at": "2026-10-28T07:15:50Z",
+    "outcome": "confirmed",
+    "http_status": 400,
+    "summary": "Endpoint answered HTTP 400 on login.salesforce.com and rejected a fake client ID (matched: invalid_client)."
+  },
+  {
+    "id": "docs",
+    "kind": "url_reachable",
+    "target_url": "https://help.salesforce.com/s/articleView?id=xcloud.external_client_apps.htm&type=5",
+    "ran_at": "2026-10-28T07:15:52Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200 after redirect to help.salesforce.com)."
+  }
+]

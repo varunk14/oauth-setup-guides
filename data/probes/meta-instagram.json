@@ -1,0 +1,38 @@
+[
+  {
+    "id": "oidc",
+    "kind": "oidc_discovery",
+    "target_url": "https://www.facebook.com/.well-known/openid-configuration",
+    "ran_at": "2026-10-28T07:15:48Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Metadata found. issuer=https://www.facebook.com; authorization_endpoint=https://facebook.com/dialog/oauth/; PKCE methods: not listed"
+  },
+  {
+    "id": "authorize",
+    "kind": "authorize_endpoint",
+    "target_url": "https://www.instagram.com/oauth/authorize",
+    "ran_at": "2026-10-28T07:15:48Z",
+    "outcome": "inconclusive",
+    "http_status": 200,
+    "summary": "Endpoint answered HTTP 200 on www.instagram.com, but no client error was visible. The page is likely rendered by JavaScript, which this check does not run."
+  },
+  {
+    "id": "console",
+    "kind": "url_reachable",
+    "target_url": "https://developers.facebook.com/apps",
+    "ran_at": "2026-10-28T07:15:49Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200)."
+  },
+  {
+    "id": "docs",
+    "kind": "url_reachable",
+    "target_url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login",
+    "ran_at": "2026-10-28T07:15:50Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200 after redirect to developers.facebook.com)."
+  }
+]
