@@ -6,7 +6,7 @@ you start, how hard that will be: the difficulty, the hands-on time, the approva
 exact steps, what can block you, and what an agent can do for you versus what you must do
 yourself. Every claim says how we know it.
 
-**Live:** LIVE_URL_PLACEHOLDER
+**Live:** https://oauth-setup-guides-lake.vercel.app
 
 - **Library.** Six checked guides for apps with very different setup paths: GitHub (Easy),
   HubSpot and Slack (Medium), Salesforce and Instagram (Hard), Gmail (Very hard).
