@@ -1,4 +1,5 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import GeneratePage from './pages/GeneratePage'
 import GuidePage from './pages/GuidePage'
 import LibraryPage from './pages/LibraryPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -13,14 +14,25 @@ function App() {
         <div className="container">
           <Link to="/" className="brand">
             <span className="brand-mark" aria-hidden="true" />
-            OAuth App Setup Guides
+            <span>
+              OAuth<span className="hide-small"> App Setup</span> Guides
+            </span>
           </Link>
+          <nav className="site-nav" aria-label="Main">
+            <NavLink to="/" end>
+              Library
+            </NavLink>
+            <NavLink to="/generate">
+              Investigate<span className="hide-small"> an app</span>
+            </NavLink>
+          </nav>
         </div>
       </header>
       <main id="main" className="container">
         <Routes>
           <Route path="/" element={<LibraryPage />} />
           <Route path="/guides/:slug" element={<GuidePage />} />
+          <Route path="/generate" element={<GeneratePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

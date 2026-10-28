@@ -96,7 +96,10 @@ export default function LibraryPage() {
       )}
       {state.status === 'ready' && visible.length === 0 && (
         <p role="status" className="message">
-          No guides match your search.
+          No guides match your search.{' '}
+          <Link to="/generate">
+            Investigate {query.trim() ? `"${query.trim()}"` : 'an app'} live
+          </Link>
         </p>
       )}
 
@@ -118,7 +121,10 @@ export default function LibraryPage() {
                 </h2>
                 <DifficultyBadge level={g.difficulty} />
               </div>
-              <p className="muted">{g.category}</p>
+              <p className="muted card-meta">
+                <span>{g.category}</span>
+                {g.generated_by === 'live_agent' && <span className="pill live">Live agent</span>}
+              </p>
               <dl className="facts">
                 <div>
                   <dt>Hands-on</dt>

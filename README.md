@@ -20,7 +20,7 @@ Requirements: Python 3.13 with [uv](https://docs.astral.sh/uv/), Node 24.
 # Backend (http://127.0.0.1:8000)
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload --port 8000
+ENV_FILE=../.env uv run uvicorn app.main:app --reload --port 8000
 
 # Frontend (http://127.0.0.1:5173), in a second terminal
 cd frontend
@@ -29,7 +29,8 @@ npm run dev
 ```
 
 Configuration: copy `.env.example` to `.env` and fill in values. Keys are used by the
-backend only and never reach the browser.
+backend only and never reach the browser. Without keys the library still works; live
+generation answers "not configured".
 
 ## Checks
 

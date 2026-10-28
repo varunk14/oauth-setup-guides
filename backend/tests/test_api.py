@@ -6,16 +6,19 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app, get_store
+from app.agent.store import GeneratedStore
+from app.main import app, get_generated, get_store
 from app.schema import Guide
 from app.store import GuideStore
 
 
 @pytest.fixture
-def client(sample_guide: dict[str, Any]) -> Iterator[TestClient]:
+def client(sample_guide: dict[str, Any], tmp_path: Path) -> Iterator[TestClient]:
     guide = Guide.model_validate(sample_guide)
     store = GuideStore({guide.app.slug: guide})
     app.dependency_overrides[get_store] = lambda: store
+    # Never read the developer's real data/generated folder in tests.
+    app.dependency_overrides[get_generated] = lambda: GeneratedStore(tmp_path)
     yield TestClient(app)
     app.dependency_overrides.clear()
 
