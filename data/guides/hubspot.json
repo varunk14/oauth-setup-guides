@@ -11,12 +11,12 @@
     ],
     "developer_console_url": "https://app.hubspot.com"
   },
-  "summary": "Self-serve to start, about 1 to 2 hours of hands-on work, but capped at 25 installs until you pass a Marketplace listing review. Apps on the current developer platform are created as projects with the HubSpot CLI, not in a web form: you set Composio's callback URL and scopes in a config file, upload the project, then copy the client ID and secret into a Composio auth config. A marketplace-distributed app stops at 25 installs until it is listed; listing needs at least three active installs from unrelated customers, public setup docs, terms and privacy URLs, and a review whose first response comes within 10 business days and that should finish within 60 days. If your product is an AI connector, the listing must use user-level access or HubSpot's MCP server. Only Super Admins (or users who hold every requested permission) can install. Composio's managed HubSpot app works today if you do not need your own branding.",
+  "summary": "Self-serve to start, about 45 minutes to 2 hours of hands-on work, but a marketplace-distributed app is capped at 25 installs until you pass a Marketplace listing review. HubSpot's docs describe creating apps as projects with the HubSpot CLI: you set Composio's callback URL and scopes in a config file, upload the project, then copy the client ID and secret into a Composio auth config. Listing needs at least three active installs from unrelated customers, public setup docs, terms and privacy URLs, and a review with an initial response within 10 business days; after HubSpot shares feedback, the rest should take no more than 60 days. If your product is an AI connector, the app must use user-level access or HubSpot's MCP server, and this must be chosen when you create it. Account-level apps can only be installed by Super Admins (or users who hold every requested permission). Composio's managed HubSpot app works today if you do not need your own branding.",
   "difficulty": {
     "level": "Medium",
     "reason": "Creating the app needs the CLI and a project upload rather than a simple form, and wide distribution is gated: 25 installs maximum until a manual Marketplace listing review, which itself needs three active customer installs first. AI connectors face an extra user-level or MCP requirement.",
     "evidence": {
-      "label": "SOURCED",
+      "label": "INFERRED",
       "source_ids": [
         "s4",
         "s3",
@@ -31,15 +31,15 @@
     "hands_on_minutes_max": 120,
     "approval_wait": "None until 25 installs",
     "approval_wait_days_min": 0,
-    "approval_wait_days_max": 60,
-    "detail": "Hands-on: 45-120 min to a working app; several more hours to prepare a Marketplace listing. Approval wait: none for the first 25 installs; listing review first response within 10 business days, whole process up to 60 days.",
+    "approval_wait_days_max": 75,
+    "detail": "Hands-on: 45-120 min to a working app; several more hours to prepare a Marketplace listing. Approval wait: none for the first 25 installs; listing review gives an initial response within 10 business days, and after feedback is shared the process should take no more than 60 days, so roughly 2.5 months in the worst case.",
     "evidence": {
       "label": "INFERRED",
       "source_ids": [
         "s4",
         "s2"
       ],
-      "note": "Hands-on time is our estimate for installing the CLI, creating and uploading a project and wiring Composio. The 10 business days and 60 days figures are stated by HubSpot; the time to reach three active installs before you can submit is not included and depends on your sales."
+      "note": "Hands-on time is our estimate for installing the CLI, creating and uploading a project and wiring Composio. The 10 business days and the 60 days counted from when feedback is shared are stated by HubSpot; the 75-day maximum adds them. The time to reach three active installs before you can submit is not included and depends on your sales."
     }
   },
   "requirements": [
@@ -80,15 +80,15 @@
       }
     },
     {
-      "name": "Super Admin in the installing account",
-      "required": "yes",
-      "detail": "You must be a Super Admin to install an app in a HubSpot account. A user who lacks access to any requested scope sees an error page and needs a Super Admin to install.",
+      "name": "Super Admin in the installing account (account-level apps)",
+      "required": "conditional",
+      "detail": "Account-level apps: you must be a Super Admin to install, and a user who lacks access to any requested scope sees an error page and needs a Super Admin to install. User-level apps (required for listed AI connectors) can be installed by any user whose HubSpot permissions cover the app's scopes.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
-          "s1"
-        ],
-        "note": "User-level apps may relax this: their docs say each user who meets the scopes can install. Not confirmed for Super Admin specifically."
+          "s1",
+          "s6"
+        ]
       }
     },
     {
@@ -191,7 +191,7 @@
     },
     {
       "name": "crm.objects.deals.write",
-      "purpose": "Create and update deals, for example after a sales call.",
+      "purpose": "Create, delete, or change deals, for example after a sales call.",
       "sensitivity": "standard",
       "triggers_review": false,
       "evidence": {
@@ -282,7 +282,7 @@
     {
       "order": 5,
       "title": "Set Composio's redirect URL and scopes",
-      "action": "In app-hsmeta.json, set config.auth.redirectUrls to https://backend.composio.dev/api/v3/toolkits/auth/callback and list requiredScopes (for example oauth, crm.objects.contacts.read). Put scopes only some customers need under optionalScopes or conditionallyRequiredScopes. Request only scopes you use.",
+      "action": "In app-hsmeta.json, set config.auth.redirectUrls to https://backend.composio.dev/api/v3/toolkits/auth/callback and list requiredScopes (for example oauth, crm.objects.contacts.read). Put scopes only some customers need under optionalScopes or conditionallyRequiredScopes. Request only scopes you use. If this is an AI connector you plan to list, also set platformVersion to 2026.09 in hsproject.json and config.isUserLevel to true in app-hsmeta.json now (CLI 8.15.0 or later): account-level apps cannot be migrated later, and user-level apps do not support webhooks, app cards or serverless functions.",
       "who": "agent",
       "expected_result": "Config file lists the Composio callback and a minimal scope set.",
       "evidence": {
@@ -290,8 +290,10 @@
         "source_ids": [
           "s4",
           "s7",
-          "s8"
-        ]
+          "s8",
+          "s6"
+        ],
+        "note": "Whether HubSpot would treat your agent product as one of its AI connectors (an app that primarily connects HubSpot to external generative AI tools) is your call; many Composio-based agent products plausibly do."
       }
     },
     {
@@ -368,7 +370,7 @@
   ],
   "review_process": {
     "required": "conditional",
-    "trigger": "No review to build, test, or install a marketplace-distributed app in up to 25 accounts. Going past 25 installs (apps created on or migrated to platform 2025.2 or later), or appearing in the HubSpot Marketplace, requires a manually reviewed listing.",
+    "trigger": "No review to build, test, or install a marketplace-distributed app in up to 25 accounts. Since September 22, 2025, marketplace-distribution apps created on or migrated to developer platform 2025.2 are capped at 25 installs until listed; going past that, or appearing in the HubSpot Marketplace, requires a manually reviewed listing.",
     "what_to_submit": [
       "At least three active, unique installs from production accounts not affiliated with you, active in the last 30 days",
       "Integration-specific listing content",
@@ -380,7 +382,7 @@
       "At least one support contact method",
       "Acceptance of the Technology Partner Program Agreement"
     ],
-    "typical_wait": "initial review within 10 business days; the whole review and feedback process should take no more than 60 days",
+    "typical_wait": "Initial review within 10 business days; after HubSpot shares feedback, the review and feedback process should take no more than 60 days",
     "common_rejections": [
       "Listing fields incomplete or inaccurate, which leaves the listing in Draft mode",
       "Listing URLs not live or not crawlable by HubSpot Crawler",
@@ -401,8 +403,8 @@
   },
   "blockers": [
     {
-      "blocker": "Marketplace-distributed apps are capped at 25 installs until listed.",
-      "how_to_get_past": "Get the listing approved, which removes the cap. For a handful of customers, private distribution allows up to 10 accounts (100 for Solutions Partners). Migrated legacy public apps with more than 25 installs that hit errors should file a support request.",
+      "blocker": "Marketplace-distributed apps (created on or migrated to platform 2025.2) are capped at 25 installs until listed, since September 22, 2025.",
+      "how_to_get_past": "Get the listing approved, which removes the cap. For a handful of customers, private OAuth distribution allows up to 10 customers, or 100 when the app is created in a Solutions Partner account; static-auth apps are limited to one account. Migrated legacy public apps with more than 25 installs that hit errors should file a support request.",
       "contact": "HubSpot developer support request, or the developer community forum",
       "evidence": {
         "label": "SOURCED",
@@ -461,7 +463,7 @@
       "Sign in to HubSpot and to the HubSpot CLI.",
       "Upload the project and copy the client secret.",
       "Create the auth config in the Composio dashboard.",
-      "Install the app as a Super Admin in test and customer accounts.",
+      "Install the app in test and customer accounts (as a Super Admin for account-level apps).",
       "Agree to the Technology Partner Program Agreement and submit the listing."
     ]
   },
@@ -550,7 +552,7 @@
     },
     {
       "topic": "sandbox_vs_production",
-      "detail": "Developer test accounts are free, up to 10 per account, include a 90-day trial of many enterprise features, and expire after 90 days with no API calls. You can renew them within 30 days of expiry.",
+      "detail": "Developer test accounts are free, up to 10 per account, include a 90-day trial of many enterprise features, and expire after 90 days with no API calls. Renewals must be done no more than 30 days before the test account's expiration date, through the API or from the Test Accounts page.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [

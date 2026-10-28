@@ -11,12 +11,12 @@
     ],
     "developer_console_url": "https://developers.facebook.com/apps"
   },
-  "summary": "Hard if your agent must act on Instagram accounts you do not own: each instagram_business_* permission needs Advanced Access through Meta App Review, and the app must be connected to a business that has passed Business Verification before it can be published. Meta asks for a working, testable app, a privacy policy, a written reason and a screen recording for every permission. Meta says a decision usually comes within a week of submitting, but Business Verification and any rejected permissions add time. Creating the Business-type app and setting up Instagram business login takes about an hour, and in Development mode it works at once for accounts that have a role on the app. Only Instagram professional (business or creator) accounts can connect. Composio's managed Instagram app lets you skip all of this while prototyping.",
+  "summary": "Hard if your agent must act on Instagram accounts you do not own: each instagram_business_* permission needs Advanced Access through Meta App Review, and the app must be connected to a business that has passed Business Verification before it can be published. Meta asks for a working, testable app, a privacy policy, a written reason and a screen recording for every permission. Meta says you should receive a decision within a week of submitting, but Business Verification and any rejected permissions add time. Creating the Business-type app and setting up Instagram business login takes about an hour, and in Development mode it works at once for accounts that have a role on the app. Only Instagram professional (business or creator) accounts can connect. Composio's managed Instagram app lets you skip most of this while prototyping, but it does not yet have every permission approved (comment management is missing).",
   "difficulty": {
     "level": "Hard",
     "reason": "Self-serve app creation, but every permission used by people without a role on the app needs App Review with screen recordings, plus Business Verification before publishing and an annual Data Use Checkup. No paid security audit, which keeps it below Gmail.",
     "evidence": {
-      "label": "SOURCED",
+      "label": "INFERRED",
       "source_ids": [
         "s2",
         "s3",
@@ -30,10 +30,10 @@
     "hands_on": "1 hour to 2 days",
     "hands_on_minutes_min": 45,
     "hands_on_minutes_max": 960,
-    "approval_wait": "1-4 weeks",
-    "approval_wait_days_min": 5,
+    "approval_wait": "1 day to 4 weeks",
+    "approval_wait_days_min": 1,
     "approval_wait_days_max": 30,
-    "detail": "Hands-on: About 1 hour to create the app and connect a test account; 1-2 days to prepare the App Review submission (privacy policy, recordings, a written reason per permission). Approval wait: About 1-4 weeks: Meta says a review decision usually comes within a week, plus Business Verification (no official duration found) and any resubmission after rejections.",
+    "detail": "Hands-on: About 1 hour to create the app and connect a test account; 1-2 days to prepare the App Review submission (privacy policy, recordings, a written reason per permission). Approval wait: Meta says you should receive a review decision within a week, so it can be only a day or two. The upper range of about 4 weeks adds Business Verification (no official duration found) and any resubmission after rejections.",
     "evidence": {
       "label": "INFERRED",
       "source_ids": [
@@ -68,8 +68,8 @@
     },
     {
       "name": "Business Verification",
-      "required": "yes",
-      "detail": "The app must be connected to a business that has completed Business Verification before it can be published; App Review may also prompt for it.",
+      "required": "conditional",
+      "detail": "Needed before you can publish the app (Live mode) and to get Advanced Access; not needed while only people with a role on the app connect in Development mode. App Review may also prompt for it.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -92,8 +92,8 @@
     },
     {
       "name": "Deauthorize callback and data deletion request URLs",
-      "required": "yes",
-      "detail": "Added in Business login settings alongside the OAuth redirect URIs.",
+      "required": "conditional",
+      "detail": "Meta's setup steps include adding a Deauthorize callback URL and a Data deletion request URL in Business login settings, alongside the OAuth redirect URIs. We did not confirm they are mandatory.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -104,7 +104,7 @@
     {
       "name": "A testable app and screen recordings",
       "required": "yes",
-      "detail": "Meta tests the app itself using its own test accounts. Each permission needs a recording (1080p or better, English UI) showing a user granting it and the app using it. A permission without a recording is not approved.",
+      "detail": "Meta tests the app itself using its own test accounts. Each permission needs a screen recording (1080p or better) showing a user granting it and the app using it. Set the app UI to English if possible; otherwise add captions. Audio is ignored. A permission without a recording is not approved.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -202,7 +202,7 @@
     {
       "order": 2,
       "title": "List the permissions your agent needs",
-      "action": "Map each agent action to an instagram_business_* permission and drop the rest. Meta pre-selects five; remove any you will not use, since each one needs its own review evidence. Read each permission's Allowed Usage section.",
+      "action": "Map each agent action to an instagram_business_* permission. Meta adds five permissions by default (basic, content_publish, manage_comments, manage_insights, manage_messages), described as required and recommended. Always keep instagram_business_basic, which is needed to refresh tokens; remove the others you will not use, since each one needs its own review evidence. Read each permission's Allowed Usage section.",
       "where_url": "https://developers.facebook.com/docs/instagram-platform/create-an-instagram-app",
       "who": "agent",
       "expected_result": "A short permission list with one reason per permission for the human to review.",
@@ -210,7 +210,8 @@
         "label": "SOURCED",
         "source_ids": [
           "s2",
-          "s4"
+          "s4",
+          "s1"
         ]
       }
     },
@@ -248,7 +249,7 @@
     {
       "order": 5,
       "title": "Create a custom auth config in Composio",
-      "action": "In the Composio dashboard click Create Auth Config, pick Instagram, choose OAuth2, turn on Use your own developer credentials, paste the Instagram App ID and Instagram App Secret (not the Facebook app ID), set the same redirect URI and your permissions. Pass the auth config ID in your session's auth_configs.",
+      "action": "In the Composio dashboard click Create Auth Config, pick Instagram, choose OAuth2, turn on Use your own developer credentials, paste the Instagram App ID and Instagram App Secret (not the Facebook app ID), set the same redirect URI and your permissions. Pass the auth config ID in your session's auth_configs. Some Composio toolkit defaults still use https://backend.composio.dev/api/v1/auth-apps/add; set the v3 callback explicitly in both the Meta app and the Composio auth config so they match exactly.",
       "where_url": "https://dashboard.composio.dev/",
       "who": "human",
       "expected_result": "An auth config ID (ac_...) for Instagram.",
@@ -295,7 +296,7 @@
     {
       "order": 8,
       "title": "Prepare the review material",
-      "action": "Draft a distinct usage description per permission (no copy and paste), test instructions for Meta's reviewers, and a recording script. The human records each screen recording (English UI, 1080p, no audio needed) and publishes the privacy policy.",
+      "action": "Draft a distinct usage description per permission (no copy and paste), test instructions for Meta's reviewers, and a recording script. The human records each screen recording (1080p or better, English UI if possible or captions otherwise, no audio needed) and publishes the privacy policy.",
       "who": "either",
       "expected_result": "One description and one recording per permission, plus access instructions.",
       "evidence": {
@@ -311,7 +312,7 @@
       "action": "In App Review > Permissions and Features request advanced access for each permission, answer data handling questions, complete app settings and app verification details, add descriptions and recordings, then Submit for Review and accept the Platform Onboarding Terms.",
       "where_url": "https://developers.facebook.com/apps",
       "who": "human",
-      "expected_result": "Submission queued; Meta says a decision usually arrives within a week.",
+      "expected_result": "Submission queued; Meta says you should receive a decision within a week.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -347,7 +348,7 @@
       "Instructions for how Meta's reviewers can access and test the app",
       "A separate usage description and screen recording for each permission"
     ],
-    "typical_wait": "Meta says a decision usually comes within a week of submitting; Business Verification and resubmissions extra",
+    "typical_wait": "Meta says you should receive a decision within a week of submitting; Business Verification and resubmissions extra",
     "common_rejections": [
       "Reviewers cannot access or test the app (whole submission rejected)",
       "A permission has no screen recording or the recording does not show it in use",
@@ -504,18 +505,21 @@
     "How long Business Verification takes; no official duration found.",
     "Whether the Instagram authorize endpoint validates client IDs; our probe was inconclusive.",
     "Whether Instagram login supports PKCE.",
-    "Which Meta login type and credentials Composio's Instagram toolkit expects in a custom auth config.",
-    "Which permissions Composio's managed Instagram app requests by default."
+    "Which credential fields Composio's Instagram custom auth config shows; Composio calls it an Instagram Login toolkit, which fits the Instagram App ID.",
+    "The full list of permissions Composio's managed Instagram app requests and has approved; Composio says comment management is missing.",
+    "Whether the Deauthorize callback and Data deletion request URLs are mandatory.",
+    "Whether an Instagram tester must accept an invite in the Instagram app before it can connect."
   ],
   "composio_note": {
     "managed_oauth": "yes",
-    "detail": "Instagram is in Composio's managed OAuth list (snapshot 2026-10-28). With the managed app your users log in to Composio's app, which Composio registers and maintains, so you can skip App Review and Business Verification while prototyping. You need your own Meta app for your own name at login, extra permissions or dedicated quota, and then you inherit the full App Review path above. Note that Meta Ads and Threads are bring-your-own only in Composio.",
+    "detail": "Instagram is in Composio's managed OAuth list (snapshot 2026-10-28). With the managed app your users log in to Composio's app, which Composio registers and maintains, so you can skip App Review and Business Verification while prototyping. You need your own Meta app for your own name at login, extra permissions or dedicated quota, and then you inherit the full App Review path above. Note that Meta Ads and Threads are bring-your-own only in Composio. Composio's managed Instagram app does not currently have every permission approved (comment management is missing as of this snapshot), so reply-to-comment flows need your own Meta app with that permission approved.",
     "snapshot_date": "2026-10-28",
     "evidence": {
       "label": "SOURCED",
       "source_ids": [
         "s9",
-        "s7"
+        "s7",
+        "s10"
       ]
     }
   },
@@ -582,6 +586,13 @@
       "title": "Composio: Managed vs custom auth",
       "kind": "official",
       "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s10",
+      "url": "https://docs.composio.dev/toolkits/instagram",
+      "title": "Composio: Instagram toolkit",
+      "kind": "official",
+      "checked_on": "2026-10-28"
     }
   ],
   "probes": [
@@ -627,7 +638,7 @@
     "generated_at": "2026-10-28T12:00:00Z",
     "generated_by": "library",
     "model": null,
-    "sources_count": 9,
+    "sources_count": 10,
     "run_seconds": null
   }
 }

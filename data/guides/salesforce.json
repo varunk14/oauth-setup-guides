@@ -11,17 +11,19 @@
     ],
     "developer_console_url": "https://login.salesforce.com"
   },
-  "summary": "Bringing your own Salesforce OAuth app is harder than it used to be, mainly when your users sit in many different Salesforce orgs. As of Spring '26 Salesforce has restricted creating new connected apps (existing ones keep working; new ones need a Support request, and Salesforce says Support will stop enabling this in future releases), so new integrations should use External Client Apps. A local External Client App takes under two hours to set up and needs no review, but Salesforce says it is available only in the org where you create it. To reach other orgs you package it in a managed package (second-generation recommended) and each customer installs that package. There is no mandatory app review unless you list on AppExchange. Composio's managed Salesforce app works today, so most builders should start there and only build their own app for branding, custom scopes, own rate limits or private My Domain instances.",
+  "summary": "Bringing your own Salesforce OAuth app is harder than it used to be, mainly when your users sit in many different Salesforce orgs. As of Spring '26 Salesforce has restricted creating new connected apps (existing ones keep working and can still be installed in other orgs; new ones need a Support request, and Salesforce says Support will stop enabling this in future releases), so new integrations should use External Client Apps. A local External Client App takes under two hours to set up and needs no review, but Salesforce says it is available only in the org where you create it. To reach other orgs you package it in a managed package (second-generation recommended) and each customer installs that package. There is no mandatory app review unless you list on AppExchange. Two limits apply whichever app you use: customer orgs on Group or Essentials Edition have no API access at all (Professional needs a paid add-on), and since September 2025 Salesforce blocks new users from authorizing connected apps their org has not installed, so a customer admin may need to install or approve the app first. Composio's managed Salesforce app works today, so most builders should start there and only build their own app for branding, custom scopes, own rate limits or private My Domain instances.",
   "difficulty": {
     "level": "Hard",
-    "reason": "Single-org setup is Medium: a form in App Manager plus OAuth settings. Serving many customer orgs is Hard: connected app creation is restricted, a local External Client App only works in its own org, and distribution needs a managed package with a Dev Hub and Salesforce DX project that each customer installs.",
+    "reason": "Single-org setup is Medium: a form in App Manager plus OAuth settings. Serving many customer orgs is Hard: connected app creation is restricted, a local External Client App only works in its own org, distribution needs a managed package with a Dev Hub and Salesforce DX project that each customer installs, customer admins may have to install or approve the app before their users can connect, and orgs without API access (Group, Essentials, Professional without the add-on) cannot be served at all. There is no approval wait from Salesforce; the difficulty comes from this setup and distribution work.",
     "evidence": {
       "label": "INFERRED",
       "source_ids": [
         "s2",
         "s3",
         "s4",
-        "s6"
+        "s6",
+        "s13",
+        "s14"
       ],
       "note": "Level is our judgement from Salesforce's own pages on the Spring '26 restriction, local vs packaged External Client Apps and packaging."
     }
@@ -33,7 +35,7 @@
     "approval_wait": "None",
     "approval_wait_days_min": 0,
     "approval_wait_days_max": 0,
-    "detail": "Hands-on: 45-120 min for a local External Client App in one org wired to Composio. Packaging for many orgs adds days of developer work (Dev Hub, namespace, Salesforce DX project, package versions) that we did not estimate.. Approval wait: None from Salesforce for a local or packaged External Client App. A Support request is needed only if you insist on a new connected app (wait not stated). AppExchange security review applies only if you list; we did not confirm its duration.",
+    "detail": "Hands-on: 45-120 min for a local External Client App in one org wired to Composio. Packaging for many orgs adds days of developer work (Dev Hub, namespace, Salesforce DX project, package versions) that we did not estimate. Approval wait: None from Salesforce for a local or packaged External Client App. A Support request is needed only if you insist on a new connected app (wait not stated). AppExchange security review applies only if you list; we did not confirm its duration.",
     "evidence": {
       "label": "INFERRED",
       "source_ids": [
@@ -48,11 +50,12 @@
     {
       "name": "A Salesforce org with a supported edition",
       "required": "yes",
-      "detail": "External Client Apps are available in Lightning Experience in Professional, Enterprise, Performance, Unlimited and Developer Editions. For testing, a Developer Edition org is the usual choice.",
+      "detail": "External Client Apps can be created in Lightning Experience in Professional, Enterprise, Performance, Unlimited and Developer Editions. For testing, a Developer Edition org is the usual choice. Every customer org that connects also needs API access: Enterprise, Unlimited, Performance and Developer include it, Professional needs the paid Web Services API add-on, and Group and Essentials cannot get it.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
-          "s4"
+          "s4",
+          "s13"
         ],
         "note": "That Developer Edition orgs are free is common knowledge but we could not load the signup page (HTTP 403)."
       }
@@ -71,7 +74,7 @@
     {
       "name": "HTTPS callback URL",
       "required": "yes",
-      "detail": "Callback URLs must use HTTPS or a custom URI scheme; put several on separate lines. Use Composio's https://backend.composio.dev/api/v3/toolkits/auth/callback.",
+      "detail": "Callback URLs must use HTTPS or a custom URI scheme; put several on separate lines. Use Composio's https://backend.composio.dev/api/v3/toolkits/auth/callback. Some Composio toolkit defaults still use https://backend.composio.dev/api/v1/auth-apps/add, so set the v3 callback explicitly in both the Salesforce app and the Composio auth config so they match exactly.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -230,7 +233,7 @@
     {
       "order": 4,
       "title": "Enable OAuth with Composio's callback",
-      "action": "Enable the OAuth plugin. Set Callback URL to https://backend.composio.dev/api/v3/toolkits/auth/callback, select the api, refresh_token/offline_access and id scopes, and keep Require Secret for Web Server Flow on.",
+      "action": "In the OAuth Settings area select Enable OAuth. Set Callback URL to https://backend.composio.dev/api/v3/toolkits/auth/callback, select the api, refresh_token/offline_access and id scopes, and keep Require Secret for Web Server Flow on.",
       "who": "human",
       "expected_result": "OAuth settings saved with the callback URL and scopes.",
       "evidence": {
@@ -304,21 +307,35 @@
     },
     {
       "order": 9,
-      "title": "Test a connection",
-      "action": "Pass the auth config ID in your session, connect a test user (use test.salesforce.com or the sandbox My Domain for sandboxes), and run one read query. Check that a refresh token was issued.",
-      "who": "either",
-      "expected_result": "The connected account works and instance_url points to the user's org.",
+      "title": "Connect a test user",
+      "action": "Pass the auth config ID in your session, open the Composio Connect Link, and sign in as a test user and approve access (use test.salesforce.com or the sandbox My Domain for sandboxes). If Salesforce blocks the approval, a customer admin must install or approve the app in that org first.",
+      "who": "human",
+      "expected_result": "The connected account shows as active in Composio.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
           "s9",
           "s7",
-          "s11"
+          "s11",
+          "s14"
         ],
         "probe_ids": [
           "authorize"
         ],
         "note": "Our probe confirmed the production authorize endpoint rejects an unknown client ID with invalid_client, which is the error you will see if the consumer key is wrong."
+      }
+    },
+    {
+      "order": 10,
+      "title": "Check the connection works",
+      "action": "Run one read query through the connected account. Check that a refresh token was issued and that instance_url points to the user's org.",
+      "who": "agent",
+      "expected_result": "The query returns data from the user's org and a refresh token is stored.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s7"
+        ]
       }
     }
   ],
@@ -341,13 +358,14 @@
   "blockers": [
     {
       "blocker": "New connected apps cannot be created since Spring '26, in the UI or the Metadata API.",
-      "how_to_get_past": "Use an External Client App. If you truly need a connected app, ask Salesforce Support, which Salesforce says will not be possible in future releases. Existing connected apps keep working and can still be installed.",
+      "how_to_get_past": "Use an External Client App. If you truly need a new connected app, ask Salesforce Support, which Salesforce says will not be possible in future releases. Existing connected apps keep working and can still be installed in other orgs by package or by OAuth install, so if you already own one, reuse it rather than building an External Client App (customer admins may still need to install or approve it).",
       "contact": "Salesforce Support via https://help.salesforce.com",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
           "s1",
-          "s2"
+          "s2",
+          "s14"
         ]
       }
     },
@@ -365,16 +383,26 @@
       }
     },
     {
-      "blocker": "Group and Essentials editions are not listed for External Client Apps.",
-      "how_to_get_past": "Customers on those editions may not be able to use your own app; check with Salesforce or keep them on Composio's managed app.",
-      "contact": null,
+      "blocker": "Customer orgs on Group or Essentials Edition have no API access, and Professional Edition has none without a paid add-on.",
+      "how_to_get_past": "No OAuth app, yours or Composio's, can call data in Group or Essentials orgs. Professional Edition customers must buy the Web Services API add-on. Enterprise, Unlimited, Performance and Developer include API access.",
+      "contact": "The customer's Salesforce account executive (for the Professional add-on)",
       "evidence": {
-        "label": "INFERRED",
+        "label": "SOURCED",
         "source_ids": [
-          "s4",
-          "s1"
-        ],
-        "note": "The connected app page lists Group and Essentials; the External Client App page does not. Whether this blocks OAuth from those editions is unverified."
+          "s13"
+        ]
+      }
+    },
+    {
+      "blocker": "Since September 2025 Salesforce blocks new users from authorizing connected apps that their org has not installed.",
+      "how_to_get_past": "With Composio's managed app, or your own existing connected app, ask the customer admin to install it or approve it under Setup > Connected Apps OAuth Usage. Users with the Approve Uninstalled Connected Apps permission (System Administrators by default) are not blocked.",
+      "contact": "The customer's Salesforce admin",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s14",
+          "s15"
+        ]
       }
     }
   ],
@@ -396,7 +424,8 @@
       "Sign in to Composio and create the custom auth config",
       "Create and promote managed package versions and get customers to install them",
       "Contact Salesforce Support if a new connected app is needed",
-      "Customer admins set policies such as permitted users in their own org"
+      "Customer admins install or approve the app and set policies such as permitted users in their own org",
+      "Sign in as a test user through the Composio Connect Link and approve access"
     ]
   },
   "nuances": [
@@ -416,7 +445,7 @@
     },
     {
       "topic": "refresh_tokens",
-      "detail": "A refresh token is returned only when the app has the refresh_token (offline_access) scope, and never for the full scope alone. A refresh token can last until revoked or for an admin-set interval, and Salesforce requires a 30-day limit on the idle refresh token time-to-live. Require Secret for Refresh Token Flow is a separate setting.",
+      "detail": "A refresh token is returned only when the app has the refresh_token (offline_access) scope, and never for the full scope alone. A refresh token can last until revoked or for an admin-set interval, but Salesforce requires a 30-day limit on the idle refresh token time-to-live: a token not used for 30 days expires (the window resets on each use), so agents must refresh at least monthly or the user must reconnect. Require Secret for Refresh Token Flow is a separate setting.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -424,6 +453,17 @@
           "s8",
           "s5"
         ]
+      }
+    },
+    {
+      "topic": "refresh_tokens",
+      "detail": "Salesforce allows only five active refresh tokens per user per app. Connecting the same user a sixth time revokes the oldest token, so avoid creating repeat connections for one user.",
+      "evidence": {
+        "label": "SOURCED",
+        "source_ids": [
+          "s15"
+        ],
+        "note": "Stated by Composio; not found on a Salesforce page"
       }
     },
     {
@@ -450,7 +490,7 @@
     },
     {
       "topic": "tenancy",
-      "detail": "Each customer is a separate org with its own instance_url, and subscriber org admins set policies for the app in their org without being able to edit its settings. Packaged apps reference the source org's global OAuth settings, so deleting the app in the source org breaks it for subscribers.",
+      "detail": "Each customer is a separate org with its own instance_url, and subscriber org admins set policies for the app in their org without being able to edit its settings. Packaged apps can either reference the source org's global OAuth settings or get a new global settings file generated in the subscriber org. If you delete the app in the source org, the subscriber org's app breaks and OAuth fails there.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -480,24 +520,27 @@
   ],
   "unverified": [
     "Whether a local External Client App's consumer key can authorize users from other orgs at all. Salesforce says local apps are available only in their own org; community write-ups (for example Nango's) reportedly say multi-org needs packaging, but we did not read them for this guide.",
-    "Whether Group and Essentials edition customers can authorize an External Client App.",
     "AppExchange security review duration and when it is required.",
     "How long a Support request for a new connected app takes, and until which release Support will still grant it.",
     "Whether Composio sends PKCE for Salesforce, which decides if Require PKCE can be turned on.",
+    "Which scopes Composio requests for Salesforce by default.",
     "How long after creation a new consumer key starts working.",
     "API request limits per edition.",
+    "The five refresh tokens per user limit on a Salesforce page; we only found it on Composio's page.",
     "That Developer Edition orgs are still free; the signup page returned HTTP 403 to us."
   ],
   "composio_note": {
     "managed_oauth": "yes",
-    "detail": "Composio lists Salesforce among its managed OAuth apps, which avoids the External Client App and packaging work entirely. Build your own app when you need your own name on the consent screen, custom scopes, a dedicated rate limit instead of shared quota, polling triggers faster than the 15-minute managed minimum, or a custom or private instance such as a customer's My Domain subdomain.",
+    "detail": "Composio lists Salesforce among its managed OAuth apps, which avoids the External Client App and packaging work entirely. Build your own app when you need your own name on the consent screen, custom scopes, a dedicated rate limit instead of shared quota, polling triggers faster than the 15-minute managed minimum, or a custom or private instance such as a customer's My Domain subdomain. Since September 2025 Salesforce blocks new users from authorizing uninstalled connected apps, so with Composio's managed app a customer admin may need to install it, or approve it under Setup > Connected Apps OAuth Usage, before non-admin users can connect.",
     "snapshot_date": "2026-10-28",
     "evidence": {
       "label": "SOURCED",
       "source_ids": [
         "s12",
         "s11",
-        "s10"
+        "s10",
+        "s14",
+        "s15"
       ]
     }
   },
@@ -585,6 +628,27 @@
       "title": "Composio: Managed OAuth apps",
       "kind": "official",
       "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s13",
+      "url": "https://help.salesforce.com/s/articleView?id=000385436&language=en_US&type=1",
+      "title": "Salesforce Help: Salesforce editions with API access",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s14",
+      "url": "https://help.salesforce.com/s/articleView?id=005132365&language=en_US&type=1",
+      "title": "Salesforce Help: Prepare for Salesforce Connected App Usage Restrictions Change",
+      "kind": "official",
+      "checked_on": "2026-10-28"
+    },
+    {
+      "id": "s15",
+      "url": "https://docs.composio.dev/toolkits/salesforce",
+      "title": "Composio: Salesforce toolkit",
+      "kind": "official",
+      "checked_on": "2026-10-28"
     }
   ],
   "probes": [
@@ -621,7 +685,7 @@
     "generated_at": "2026-10-28T12:00:00Z",
     "generated_by": "library",
     "model": null,
-    "sources_count": 12,
+    "sources_count": 15,
     "run_seconds": null
   }
 }
