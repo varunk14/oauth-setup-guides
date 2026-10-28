@@ -123,3 +123,25 @@ def test_gate_reports_busy_while_a_run_holds_the_lock() -> None:
         return "no error"
 
     assert asyncio.run(scenario()) == "busy"
+
+
+def test_live_copies_of_library_apps_are_not_listed_but_still_reachable(agent: Agent) -> None:
+    from app.schema import Guide
+    from tests.agent_fakes import RESEARCH
+
+    data = {
+        **RESEARCH,
+        "app_name": "GitHub",
+        "website": "https://github.com",
+        "official_domains": ["github.com"],
+    }
+    agent.deps.chain_factory = lambda notify: ProviderChain(
+        FakeProvider(research_data=data), None, notify
+    )
+    assert post("GitHub", refresh=True)[-1]["slug"] == "github-live"
+    client = TestClient(app)
+    slugs = [g["slug"] for g in client.get("/api/guides").json()]
+    assert slugs.count("github") == 1 and "github-live" not in slugs
+    assert (
+        Guide.model_validate(client.get("/api/guides/github-live").json()).app.slug == "github-live"
+    )
