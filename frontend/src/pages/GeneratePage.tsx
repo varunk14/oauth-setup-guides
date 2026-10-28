@@ -13,8 +13,23 @@ const STEPS: [string, string][] = [
 type Phase = 'idle' | 'running' | 'finished'
 
 interface StepState {
-  status: 'pending' | 'running' | 'done'
+  status: 'pending' | 'running' | 'done' | 'failed'
   message: string
+}
+
+/** When a run ends, no step may keep spinning: it either finished or failed. */
+function settleRunning(
+  steps: Record<string, StepState>,
+  status: 'done' | 'failed',
+): Record<string, StepState> {
+  return Object.fromEntries(
+    Object.entries(steps).map(([id, state]) => [
+      id,
+      state.status !== 'running'
+        ? state
+        : { status, message: status === 'failed' ? 'Stopped at this step.' : state.message },
+    ]),
+  )
 }
 
 export default function GeneratePage() {
@@ -43,6 +58,7 @@ export default function GeneratePage() {
     } else if (event.type === 'notice') {
       setNotices((prev) => [...prev, event.message])
     } else {
+      setSteps((prev) => settleRunning(prev, event.type === 'error' ? 'failed' : 'done'))
       setResult(event)
       if (event.type === 'done' && event.cached) {
         navigate(`/guides/${event.slug}`)
@@ -66,6 +82,7 @@ export default function GeneratePage() {
     } catch (error: unknown) {
       if (controller.current.signal.aborted) return
       const message = error instanceof Error ? error.message : 'Unknown error.'
+      setSteps((prev) => settleRunning(prev, 'failed'))
       setResult({
         type: 'error',
         code: 'network',

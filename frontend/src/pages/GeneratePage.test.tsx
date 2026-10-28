@@ -68,6 +68,27 @@ describe('GeneratePage', () => {
     )
   })
 
+  it('stops the spinner and marks the step failed when the run ends in an error', async () => {
+    const user = userEvent.setup()
+    mockGenerate(
+      sse([
+        { type: 'step', step: 'research', status: 'running', message: 'Searching...' },
+        { type: 'error', code: 'unknown_app', message: 'We could not identify an app.' },
+      ]),
+    )
+    const { container } = renderAt('/generate')
+    await user.type(screen.getByRole('textbox'), 'Zzqx')
+    await user.click(screen.getByRole('button', { name: 'Investigate' }))
+    await screen.findByRole('alert')
+    expect(container.querySelector('.progress-step.is-running')).toBeNull()
+    expect(container.querySelector('.progress-step.is-failed')).toHaveTextContent(
+      'Research the official docs',
+    )
+    expect(screen.getByText('(failed)')).toBeInTheDocument()
+    expect(screen.getByText('Stopped at this step.')).toBeInTheDocument()
+    expect(screen.queryByText('Searching...')).toBeNull()
+  })
+
   it('says so when the app does not use OAuth', async () => {
     const user = userEvent.setup()
     mockGenerate(sse([{ type: 'no_oauth', message: 'It uses API keys.' }]))

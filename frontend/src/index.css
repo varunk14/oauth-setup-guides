@@ -725,6 +725,15 @@ a.button:hover {
   border-color: #276b45;
 }
 
+.progress-step.is-failed {
+  color: var(--ink);
+}
+
+.is-failed .progress-dot {
+  border-color: #b04040;
+  background: #fbeeee;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
