@@ -200,3 +200,62 @@ def test_library_app_regenerated_live_gets_its_own_slug(tmp_path: Path) -> None:
     assert events[-1]["slug"] == "github-live"
     guide = deps.generated.get("github-live")
     assert guide is not None and guide.composio_note.managed_oauth == "yes"
+
+
+def test_sources_that_redirect_to_another_official_domain_are_kept() -> None:
+    from datetime import UTC, datetime
+
+    from app.agent.pipeline import check_sources
+    from app.probes import Allowlist, ProbeSpec
+    from app.schema import Probe, Source
+
+    seen: list[set[str]] = []
+
+    async def runner(specs: list[ProbeSpec], allow: Allowlist) -> list[Probe]:
+        seen.append(allow.domains)
+        out = []
+        for s in specs:
+            if s.url.endswith("/moved"):
+                ok = "docs.acme.dev" if allow.allows("docs.acme.dev") else None
+                outcome, summary = (
+                    ("confirmed", "Page loads (HTTP 200 after redirect to docs.acme.dev).")
+                    if ok
+                    else ("inconclusive", "Not sent: host 'docs.acme.dev' is not on the allowlist.")
+                )
+            elif s.url.endswith("/gone"):
+                outcome, summary = "not_found", "Page not found (HTTP 404)."
+            else:
+                outcome, summary = "inconclusive", "Not sent: only https is allowed, got 'http'."
+            out.append(
+                Probe.model_validate(
+                    {
+                        "id": s.id,
+                        "kind": s.kind,
+                        "target_url": s.url,
+                        "outcome": outcome,
+                        "summary": summary,
+                        "ran_at": datetime(2026, 10, 28, tzinfo=UTC),
+                    }
+                )
+            )
+        return out
+
+    def src(i: int, url: str) -> Source:
+        return Source.model_validate(
+            {
+                "id": f"s{i}",
+                "url": url,
+                "title": "t",
+                "kind": "official",
+                "checked_on": "2026-10-28",
+            }
+        )
+
+    sources = [
+        src(1, "https://acme.example/moved"),
+        src(2, "https://acme.example/gone"),
+        src(3, "http://acme.example/insecure"),
+    ]
+    kept = asyncio.run(check_sources(sources, runner, {"acme.example", "acme.dev"}))
+    assert [s.id for s in kept] == ["s1"]
+    assert "acme.dev" in seen[0]
