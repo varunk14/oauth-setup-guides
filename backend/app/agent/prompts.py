@@ -12,6 +12,9 @@ Search the provider's OFFICIAL developer documentation first. Find:
 - requirements such as paid plans, business verification, privacy policy, verified domain;
 - limits on how many customers can connect or install before review, certification,
   a partner programme or a paid tier (for example connection or install caps);
+- restrictions that apply until an app is listed, reviewed or approved (for example lower
+  API rate limits for unlisted or non-marketplace apps, or terms that require a listing for
+  commercial distribution);
 - tokens: expiry, refresh tokens, PKCE, redirect URI rules, sandbox vs production, rate limits.
 
 Rules:

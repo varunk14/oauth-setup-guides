@@ -92,8 +92,17 @@ def health() -> dict[str, str]:
 
 @app.get("/api/guides")
 def list_guides(store: Store, generated: Generated) -> list[GuideSummary]:
+    # A live re-run of a library app ("<slug>-live") is a comparison copy: reachable by
+    # its link, but not listed next to the checked library guide.
+    library_slugs = {s.slug for s in store.summaries()}
     live = sorted(
-        (summarize(g) for g in generated.all()), key=lambda s: s.generated_at, reverse=True
+        (
+            summarize(g)
+            for g in generated.all()
+            if g.app.slug.removesuffix("-live") not in library_slugs
+        ),
+        key=lambda s: s.generated_at,
+        reverse=True,
     )
     return [*store.summaries(), *live]
 

@@ -130,16 +130,29 @@ def plan_probes(research: dict[str, Any], official: set[str]) -> list[ProbeSpec]
     return specs
 
 
-async def check_sources(sources: list[Source], runner: ProbeRunner) -> list[Source]:
-    """Drop sources whose page does not exist or that our safety rules refuse."""
+# Refusals that mean the URL itself is unsafe or bogus (as opposed to a redirect elsewhere).
+UNSAFE_SOURCE = ("only https", "non-public address", "did not resolve")
+
+
+async def check_sources(
+    sources: list[Source], runner: ProbeRunner, official: set[str] | None = None
+) -> list[Source]:
+    """Drop sources whose page is missing or unsafe; keep pages that redirect elsewhere.
+
+    Providers move docs between their domains (api.slack.com -> docs.slack.dev), so all
+    official domains are allowed, and a redirect to an unlisted domain still proves the
+    page exists.
+    """
     if not sources:
         return []
     specs = [ProbeSpec(f"c{i}", "url_reachable", str(s.url)) for i, s in enumerate(sources)]
-    allow = Allowlist({registrable_domain(host_of(str(s.url))) for s in sources})
-    results = await runner(specs, allow)
+    domains = {registrable_domain(host_of(str(s.url))) for s in sources} | set(official or ())
+    results = await runner(specs, Allowlist(domains))
     keep = []
     for source, probe in zip(sources, results, strict=True):
-        if probe.outcome == "not_found" or probe.summary.startswith("Not sent"):
+        if probe.outcome == "not_found":
+            continue
+        if probe.summary.startswith("Not sent") and any(m in probe.summary for m in UNSAFE_SOURCE):
             continue
         keep.append(source)
     return keep
@@ -299,7 +312,7 @@ async def _run(
         )
         today = datetime.now(UTC).date()
         candidates = build_sources(data, research.consulted_urls, official, today)
-        sources = await check_sources(candidates, deps.probe_runner)
+        sources = await check_sources(candidates, deps.probe_runner, official)
         await emit(
             {
                 "type": "step",
