@@ -65,9 +65,9 @@ def test_invalid_guides_rejected(
         Guide.model_validate(mutate(sample_guide, path, value))
 
 
-def test_tested_requires_successful_probe(sample_guide: dict[str, Any]) -> None:
-    data = mutate(sample_guide, ["probes", 0, "ok"], False)
-    with pytest.raises(ValidationError, match="at least one successful probe"):
+def test_tested_requires_conclusive_probe(sample_guide: dict[str, Any]) -> None:
+    data = mutate(sample_guide, ["probes", 0, "outcome"], "inconclusive")
+    with pytest.raises(ValidationError, match="at least one conclusive probe"):
         Guide.model_validate(data)
 
 
