@@ -581,7 +581,7 @@
       "id": "oidc",
       "kind": "oidc_discovery",
       "target_url": "https://github.com/.well-known/openid-configuration",
-      "ran_at": "2026-10-28T07:15:45Z",
+      "ran_at": "2026-10-28T09:12:20Z",
       "outcome": "not_found",
       "http_status": 404,
       "summary": "No metadata document (HTTP 404)."
@@ -590,7 +590,7 @@
       "id": "oauth-meta",
       "kind": "oauth_metadata",
       "target_url": "https://github.com/.well-known/oauth-authorization-server",
-      "ran_at": "2026-10-28T07:15:45Z",
+      "ran_at": "2026-10-28T09:12:20Z",
       "outcome": "not_found",
       "http_status": 404,
       "summary": "No metadata document (HTTP 404)."
@@ -599,7 +599,7 @@
       "id": "authorize",
       "kind": "authorize_endpoint",
       "target_url": "https://github.com/login/oauth/authorize",
-      "ran_at": "2026-10-28T07:15:45Z",
+      "ran_at": "2026-10-28T09:12:21Z",
       "outcome": "confirmed",
       "http_status": 200,
       "summary": "Endpoint is live: it sent us to a sign-in page on github.com that carries our fake client ID back to the authorize route. It asks users to sign in before it checks the client ID, so rejection could not be observed anonymously."
@@ -608,7 +608,7 @@
       "id": "console",
       "kind": "url_reachable",
       "target_url": "https://github.com/settings/applications/new",
-      "ran_at": "2026-10-28T07:15:45Z",
+      "ran_at": "2026-10-28T09:12:21Z",
       "outcome": "confirmed",
       "http_status": 200,
       "summary": "Page loads (HTTP 200 after redirect to github.com)."
@@ -617,7 +617,7 @@
       "id": "docs",
       "kind": "url_reachable",
       "target_url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
-      "ran_at": "2026-10-28T07:15:45Z",
+      "ran_at": "2026-10-28T09:12:20Z",
       "outcome": "confirmed",
       "http_status": 200,
       "summary": "Page loads (HTTP 200)."
