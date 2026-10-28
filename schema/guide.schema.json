@@ -371,9 +371,15 @@
           "title": "Kind",
           "type": "string"
         },
-        "ok": {
-          "title": "Ok",
-          "type": "boolean"
+        "outcome": {
+          "description": "confirmed: the thing exists and works; not_found: definitely absent; inconclusive: blocked, timed out or unclear (cannot back a TESTED claim)",
+          "enum": [
+            "confirmed",
+            "not_found",
+            "inconclusive"
+          ],
+          "title": "Outcome",
+          "type": "string"
         },
         "ran_at": {
           "format": "date-time",
@@ -398,7 +404,7 @@
         "kind",
         "target_url",
         "ran_at",
-        "ok",
+        "outcome",
         "summary"
       ],
       "title": "Probe",
@@ -639,7 +645,8 @@
       "additionalProperties": false,
       "properties": {
         "approval_wait": {
-          "description": "e.g. 'none' or '2-6 weeks'",
+          "description": "Short label, e.g. 'None' or '2-6 weeks'",
+          "maxLength": 40,
           "minLength": 1,
           "title": "Approval Wait",
           "type": "string"
@@ -654,11 +661,25 @@
           "title": "Approval Wait Days Min",
           "type": "integer"
         },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Plain explanation of the estimate and what changes it",
+          "title": "Detail"
+        },
         "evidence": {
           "$ref": "#/$defs/Evidence"
         },
         "hands_on": {
-          "description": "Human-readable, e.g. '30-60 min'",
+          "description": "Short label for cards, e.g. '30-60 min'",
+          "maxLength": 40,
           "minLength": 1,
           "title": "Hands On",
           "type": "string"

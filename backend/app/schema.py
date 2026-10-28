@@ -60,7 +60,10 @@ class Probe(Strict):
     kind: Literal["oidc_discovery", "oauth_metadata", "authorize_endpoint", "url_reachable"]
     target_url: HttpUrl
     ran_at: datetime
-    ok: bool
+    outcome: Literal["confirmed", "not_found", "inconclusive"] = Field(
+        description="confirmed: the thing exists and works; not_found: definitely absent; "
+        "inconclusive: blocked, timed out or unclear (cannot back a TESTED claim)"
+    )
     http_status: int | None = None
     summary: str = Field(min_length=1)
 
@@ -84,12 +87,19 @@ class Difficulty(Strict):
 
 
 class TimeEstimate(Strict):
-    hands_on: str = Field(min_length=1, description="Human-readable, e.g. '30-60 min'")
+    hands_on: str = Field(
+        min_length=1, max_length=40, description="Short label for cards, e.g. '30-60 min'"
+    )
     hands_on_minutes_min: int = Field(ge=0)
     hands_on_minutes_max: int = Field(ge=0)
-    approval_wait: str = Field(min_length=1, description="e.g. 'none' or '2-6 weeks'")
+    approval_wait: str = Field(
+        min_length=1, max_length=40, description="Short label, e.g. 'None' or '2-6 weeks'"
+    )
     approval_wait_days_min: int = Field(ge=0)
     approval_wait_days_max: int = Field(ge=0)
+    detail: str | None = Field(
+        default=None, description="Plain explanation of the estimate and what changes it"
+    )
     evidence: Evidence
 
     @model_validator(mode="after")
@@ -235,10 +245,10 @@ class Guide(Strict):
             missing_probes = set(ev.probe_ids) - set(probe_ids)
             if missing_probes:
                 raise ValueError(f"evidence cites unknown probes: {sorted(missing_probes)}")
-            if ev.label is EvidenceLabel.TESTED and not any(
-                probes_by_id[pid].ok for pid in ev.probe_ids
+            if ev.label is EvidenceLabel.TESTED and all(
+                probes_by_id[pid].outcome == "inconclusive" for pid in ev.probe_ids
             ):
-                raise ValueError("TESTED evidence must cite at least one successful probe")
+                raise ValueError("TESTED evidence must cite at least one conclusive probe")
         orders = [s.order for s in self.steps]
         if orders != list(range(1, len(orders) + 1)):
             raise ValueError("steps must be numbered 1..n in order")

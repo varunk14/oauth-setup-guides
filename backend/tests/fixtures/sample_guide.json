@@ -101,7 +101,7 @@
       "kind": "authorize_endpoint",
       "target_url": "https://example.com/oauth/authorize",
       "ran_at": "2026-10-28T10:00:00Z",
-      "ok": true,
+      "outcome": "confirmed",
       "http_status": 400,
       "summary": "Returned invalid_client for a fake client ID."
     },
@@ -110,7 +110,7 @@
       "kind": "oidc_discovery",
       "target_url": "https://example.com/.well-known/openid-configuration",
       "ran_at": "2026-10-28T10:00:01Z",
-      "ok": true,
+      "outcome": "confirmed",
       "http_status": 200,
       "summary": "Lists code_challenge_methods_supported: S256."
     }

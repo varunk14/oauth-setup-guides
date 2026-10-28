@@ -1,0 +1,29 @@
+[
+  {
+    "id": "oauth-meta",
+    "kind": "oauth_metadata",
+    "target_url": "https://api.hubapi.com/.well-known/oauth-authorization-server",
+    "ran_at": "2026-10-28T09:12:29Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Metadata found. issuer=https://mcp.hubspot.com; authorization_endpoint=https://mcp.hubspot.com/oauth/authorize/user; token_endpoint=https://mcp.hubspot.com/oauth/v3/token; PKCE methods: S256"
+  },
+  {
+    "id": "authorize",
+    "kind": "authorize_endpoint",
+    "target_url": "https://app.hubspot.com/oauth/authorize",
+    "ran_at": "2026-10-28T09:12:29Z",
+    "outcome": "inconclusive",
+    "http_status": 200,
+    "summary": "Endpoint answered HTTP 200 on app.hubspot.com, but no client error was visible. The page is likely rendered by JavaScript, which this check does not run."
+  },
+  {
+    "id": "docs",
+    "kind": "url_reachable",
+    "target_url": "https://developers.hubspot.com/docs/apps/developer-platform/build-apps/create-an-app",
+    "ran_at": "2026-10-28T09:12:29Z",
+    "outcome": "confirmed",
+    "http_status": 200,
+    "summary": "Page loads (HTTP 200)."
+  }
+]
