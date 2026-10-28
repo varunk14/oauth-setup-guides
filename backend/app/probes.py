@@ -11,8 +11,10 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
+import html
 import ipaddress
 import json
+import re
 import socket
 from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass
@@ -45,6 +47,10 @@ CLIENT_REJECTION_MARKERS = (
     "oauth client was not found",
     "invalid_request",
 )
+
+# A 200 page whose title says it does not exist (common for signed-out visitors).
+SOFT_404_TITLE = re.compile(r"not found|\b404\b|does(n't| not) exist", re.IGNORECASE)
+TITLE_RE = re.compile(rb"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
 
 ProbeKind = Literal["oidc_discovery", "oauth_metadata", "authorize_endpoint", "url_reachable"]
 Resolver = Callable[[str], Awaitable[list[str]]]
@@ -165,6 +171,14 @@ def _error_text_from_query(query: str) -> str:
     return " ".join(texts)
 
 
+def _html_title(body: bytes) -> str:
+    match = TITLE_RE.search(body)
+    if not match:
+        return ""
+    text = html.unescape(match.group(1).decode("utf-8", "replace"))
+    return " ".join(text.split())[:120]
+
+
 def _describe_metadata(data: dict[str, object]) -> str:
     parts = []
     for key in ("issuer", "authorization_endpoint", "token_endpoint"):
@@ -262,6 +276,15 @@ async def _run_one(
         )
 
     # url_reachable
+    title = _html_title(result.body)
+    if status < 400 and title and SOFT_404_TITLE.search(title):
+        return _probe(
+            spec,
+            "inconclusive",
+            f"HTTP {status} on {final_host}, but the page title is '{title}' for a signed-out "
+            "visitor, so we could not confirm the page itself.",
+            status,
+        )
     if status < 400:
         note = "" if result.final_url == spec.url else f" after redirect to {final_host}"
         return _probe(spec, "confirmed", f"Page loads (HTTP {status}{note}).", status)

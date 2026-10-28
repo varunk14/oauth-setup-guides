@@ -130,6 +130,25 @@ def test_redirects_within_allowlist_are_followed() -> None:
     assert "login.example.com" in probe.summary
 
 
+def test_soft_404_page_is_inconclusive() -> None:
+    page = "<html><head><title>Page Not Found - Example</title></head><body></body></html>"
+    probe = run(
+        ProbeSpec("p1", "url_reachable", "https://example.com/apps"),
+        lambda req: httpx.Response(200, text=page),
+    )
+    assert probe.outcome == "inconclusive"
+    assert "Page Not Found" in probe.summary
+
+
+def test_normal_page_title_is_confirmed() -> None:
+    page = "<html><head><title>Developer Apps</title></head><body>404 errors docs</body></html>"
+    probe = run(
+        ProbeSpec("p1", "url_reachable", "https://example.com/apps"),
+        lambda req: httpx.Response(200, text=page),
+    )
+    assert probe.outcome == "confirmed"
+
+
 def test_redirect_off_allowlist_is_blocked() -> None:
     calls: list[str] = []
 
