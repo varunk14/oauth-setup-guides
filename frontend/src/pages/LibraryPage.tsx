@@ -53,6 +53,15 @@ export default function LibraryPage() {
       <section aria-label="Find a guide" className="filters">
         <label className="search">
           <span className="visually-hidden">Search apps</span>
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+            <path
+              d="M10.5 10.5L14 14"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
           <input
             type="search"
             placeholder="Search apps, e.g. Slack"
@@ -91,13 +100,21 @@ export default function LibraryPage() {
         </p>
       )}
 
+      {state.status === 'ready' && visible.length > 0 && (
+        <p className="count">
+          {visible.length} of {state.guides.length} guides
+        </p>
+      )}
+
       {visible.length > 0 && (
         <ul className="cards" aria-label="Guides">
           {visible.map((g) => (
             <li key={g.slug} className="card">
               <div className="card-top">
                 <h2>
-                  <Link to={`/guides/${g.slug}`}>{g.name}</Link>
+                  <Link className="card-link" to={`/guides/${g.slug}`}>
+                    {g.name}
+                  </Link>
                 </h2>
                 <DifficultyBadge level={g.difficulty} />
               </div>
@@ -114,7 +131,19 @@ export default function LibraryPage() {
               </dl>
               <p className="card-reason">{g.difficulty_reason}</p>
               {g.managed_oauth === 'yes' && (
-                <p className="managed">Composio managed OAuth available to start</p>
+                <p className="managed">
+                  <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M3.5 8.5l3 3 6-7"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Composio managed app available to start
+                </p>
               )}
             </li>
           ))}

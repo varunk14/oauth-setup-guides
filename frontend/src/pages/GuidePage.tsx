@@ -12,9 +12,15 @@ type State =
   | { status: 'ready'; guide: Guide }
 
 const managedText = {
-  yes: 'Yes. You can start on Composio’s managed OAuth app today.',
-  no: 'No. You need to bring your own OAuth app.',
-  unknown: 'Unknown.',
+  yes: 'You can start on Composio’s managed OAuth app today.',
+  no: 'Composio has no managed app here; you need to bring your own OAuth app.',
+  unknown: 'We could not tell whether Composio has a managed app here.',
+} as const
+
+const managedPill = {
+  yes: 'Managed app available',
+  no: 'Bring your own app',
+  unknown: 'Managed app unknown',
 } as const
 
 function formatDate(iso: string): string {
@@ -95,6 +101,18 @@ function GuideView({ slug }: { slug: string }) {
   }
 
   const g = state.guide
+  const toc: [string, string][] = [
+    ['steps', 'Steps'],
+    ['review', 'Review'],
+    ...(g.requirements.length ? [['requirements', 'Requirements'] as [string, string]] : []),
+    ...(g.scopes.length ? [['scopes', 'Scopes'] as [string, string]] : []),
+    ...(g.blockers.length ? [['blockers', 'Blockers'] as [string, string]] : []),
+    ['agent-human', 'Agent vs you'],
+    ...(g.nuances.length ? [['nuances', 'Nuances'] as [string, string]] : []),
+    ...((g.unverified ?? []).length ? [['unverified', 'Not verified'] as [string, string]] : []),
+    ...(g.probes.length ? [['checks', 'Checks'] as [string, string]] : []),
+    ['sources', 'Sources'],
+  ]
   const ev = (e: Guide['difficulty']['evidence']) => (
     <EvidenceTag evidence={e} sourceNumbers={sourceNumbers} />
   )
@@ -102,7 +120,7 @@ function GuideView({ slug }: { slug: string }) {
   return (
     <article className="guide">
       <p className="crumbs">
-        <Link to="/">All guides</Link>
+        <Link to="/">&larr; All guides</Link>
       </p>
       <header className="guide-header">
         <h1>{g.app.name}</h1>
@@ -113,10 +131,10 @@ function GuideView({ slug }: { slug: string }) {
           </a>
         </p>
         <div className="actions">
-          <button type="button" onClick={() => void copy('link')}>
+          <button type="button" className="button" onClick={() => void copy('link')}>
             Copy link
           </button>
-          <button type="button" onClick={() => void copy('markdown')}>
+          <button type="button" className="button" onClick={() => void copy('markdown')}>
             Copy as Markdown
           </button>
           <span role="status" aria-live="polite" className="copy-status">
@@ -127,42 +145,57 @@ function GuideView({ slug }: { slug: string }) {
 
       <p className="summary">{g.summary}</p>
 
-      <section className="overview" aria-label="Overview">
-        <div className="tile">
-          <h2>Difficulty</h2>
+      <section className="panel glance" aria-label="At a glance">
+        <div className="glance-item">
+          <h2 className="label">Difficulty</h2>
           <DifficultyBadge level={g.difficulty.level} />
           <p>{g.difficulty.reason}</p>
           {ev(g.difficulty.evidence)}
         </div>
-        <div className="tile">
-          <h2>Hands-on effort</h2>
+        <div className="glance-item">
+          <h2 className="label">Hands-on effort</h2>
           <p className="big">{g.time.hands_on}</p>
         </div>
-        <div className="tile">
-          <h2>Approval wait</h2>
+        <div className="glance-item">
+          <h2 className="label">Approval wait</h2>
           <p className="big">{g.time.approval_wait}</p>
           {ev(g.time.evidence)}
         </div>
+        {g.time.detail ? <p className="glance-detail">{g.time.detail}</p> : null}
       </section>
 
-      {g.time.detail ? <p className="muted small time-detail">{g.time.detail}</p> : null}
-
-      <section className="callout" aria-labelledby="composio">
-        <h2 id="composio">Do you need your own OAuth app?</h2>
+      <section className="panel" aria-labelledby="composio">
+        <div className="panel-head">
+          <h2 id="composio">Do you need your own OAuth app?</h2>
+          <span className={`pill pill-${g.composio_note.managed_oauth}`}>
+            {managedPill[g.composio_note.managed_oauth]}
+          </span>
+        </div>
         <p>
-          <strong>Composio managed OAuth: {managedText[g.composio_note.managed_oauth]}</strong>{' '}
-          {g.composio_note.detail}
+          <strong>{managedText[g.composio_note.managed_oauth]}</strong> {g.composio_note.detail}
         </p>
         <p className="muted small">
           Directory snapshot {g.composio_note.snapshot_date}. {ev(g.composio_note.evidence)}
         </p>
       </section>
 
+      <nav className="toc" aria-label="On this page">
+        <span className="label">On this page</span>
+        {toc.map(([id, text]) => (
+          <a key={id} href={`#${id}`}>
+            {text}
+          </a>
+        ))}
+      </nav>
+
       <section aria-labelledby="steps">
         <h2 id="steps">Steps</h2>
         <ol className="steps">
           {g.steps.map((s) => (
             <li key={s.order}>
+              <span className="step-num" aria-hidden="true">
+                {s.order}
+              </span>
               <div className="step-head">
                 <strong>{s.title}</strong> <WhoBadge who={s.who} />
               </div>
@@ -315,7 +348,7 @@ function GuideView({ slug }: { slug: string }) {
       )}
 
       {(g.unverified ?? []).length > 0 && (
-        <section className="callout warning" aria-labelledby="unverified">
+        <section className="panel panel-warm" aria-labelledby="unverified">
           <h2 id="unverified">What we could not verify</h2>
           <ul>
             {(g.unverified ?? []).map((x) => (
@@ -354,7 +387,7 @@ function GuideView({ slug }: { slug: string }) {
                       </span>
                     </td>
                     <td>{p.summary}</td>
-                    <td>{formatDate(p.ran_at)}</td>
+                    <td className="nowrap">{formatDate(p.ran_at)}</td>
                   </tr>
                 ))}
               </tbody>

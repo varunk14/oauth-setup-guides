@@ -8,7 +8,12 @@ const levelClass: Record<Level, string> = {
 }
 
 export function DifficultyBadge({ level }: { level: Level }) {
-  return <span className={`badge ${levelClass[level]}`}>{level}</span>
+  return (
+    <span className={`badge ${levelClass[level]}`}>
+      <span className="dot" aria-hidden="true" />
+      {level}
+    </span>
+  )
 }
 
 const evidenceHelp: Record<EvidenceLabel, string> = {

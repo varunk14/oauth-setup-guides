@@ -12,6 +12,7 @@ function App() {
       <header className="site-header">
         <div className="container">
           <Link to="/" className="brand">
+            <span className="brand-mark" aria-hidden="true" />
             OAuth App Setup Guides
           </Link>
         </div>
