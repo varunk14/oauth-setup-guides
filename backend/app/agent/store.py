@@ -1,14 +1,32 @@
-"""Small store for live-generated guides (JSON files, one per slug, plus a domain index)."""
+"""Stores for live-generated guides.
+
+FileStore keeps JSON files (local development, tests). RedisStore keeps them in Upstash
+Redis, which survives across serverless instances (the hosted app).
+"""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Protocol
 
+from app.agent.redis import Redis
 from app.schema import Guide
 
 
+class GuideRepo(Protocol):
+    def get(self, slug: str) -> Guide | None: ...
+
+    def find(self, key: str) -> Guide | None: ...
+
+    def put(self, guide: Guide, keys: list[str]) -> None: ...
+
+    def all(self) -> list[Guide]: ...
+
+
 class GeneratedStore:
+    """File-based store (one JSON file per slug plus a domain index)."""
+
     def __init__(self, directory: Path) -> None:
         self.directory = directory
 
@@ -54,3 +72,38 @@ class GeneratedStore:
             if guide:
                 guides.append(guide)
         return guides
+
+
+class RedisStore:
+    def __init__(self, redis: Redis, prefix: str = "osg") -> None:
+        self.redis = redis
+        self.prefix = prefix
+
+    def _k(self, *parts: str) -> str:
+        return ":".join((self.prefix, *parts))
+
+    def get(self, slug: str) -> Guide | None:
+        raw = self.redis.command("GET", self._k("guide", slug))
+        if not raw:
+            return None
+        try:
+            return Guide.model_validate_json(raw)
+        except ValueError:
+            return None
+
+    def find(self, key: str) -> Guide | None:
+        key = key.lower()
+        slug = self.redis.command("GET", self._k("idx", key)) or key
+        return self.get(str(slug))
+
+    def put(self, guide: Guide, keys: list[str]) -> None:
+        slug = guide.app.slug
+        self.redis.command("SET", self._k("guide", slug), guide.model_dump_json())
+        self.redis.command("SADD", self._k("guides"), slug)
+        for key in {k.lower() for k in keys if k}:
+            self.redis.command("SET", self._k("idx", key), slug)
+
+    def all(self) -> list[Guide]:
+        slugs = self.redis.command("SMEMBERS", self._k("guides")) or []
+        guides = [self.get(str(s)) for s in sorted(slugs)]
+        return [g for g in guides if g]

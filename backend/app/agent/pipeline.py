@@ -33,7 +33,7 @@ from app.agent.assemble import (
 )
 from app.agent.prompts import RESEARCH_SYSTEM, WRITE_SYSTEM
 from app.agent.providers import ProviderChain, ProviderError
-from app.agent.store import GeneratedStore
+from app.agent.store import GuideRepo
 from app.probes import Allowlist, ProbeSpec
 from app.schema import Guide, Probe, Source
 from app.store import GuideStore
@@ -58,7 +58,7 @@ class InvestigationError(Exception):
 class Deps:
     chain_factory: ChainFactory
     probe_runner: ProbeRunner
-    generated: GeneratedStore
+    generated: GuideRepo
     library: GuideStore
     timeout_s: float = 240
 
@@ -179,7 +179,10 @@ def _keep_failed(deps: Deps, run_id: str, name: str, raw: object, exc: Validatio
     """Log why a draft failed and keep it (git-ignored) so the cause can be fixed."""
     problems = [f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors()[:15]]
     log.warning(json.dumps({"event": "invalid_draft", "run_id": run_id, "errors": problems}))
-    folder = deps.generated.directory / "_failed"
+    directory = getattr(deps.generated, "directory", None)
+    if directory is None:
+        return  # Redis store: the log line above is the record.
+    folder = directory / "_failed"
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{run_id}-{name}.json").write_text(
         json.dumps({"errors": problems, "raw": raw}, indent=1, default=str)

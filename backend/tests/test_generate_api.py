@@ -76,7 +76,7 @@ def test_library_answers_are_free_and_skip_limits(agent: Agent) -> None:
             "cached": True,
             "from": "library",
         }
-    assert agent.gate.day.maxlen is None and len(agent.gate.day) == 0
+    assert isinstance(agent.gate, RunGate) and len(agent.gate.day) == 0
 
 
 def test_per_ip_limit_gives_clear_message(agent: Agent) -> None:
@@ -99,7 +99,7 @@ def test_daily_limit(agent: Agent) -> None:
 def test_bad_query_is_rejected_without_a_run(agent: Agent) -> None:
     last = post("<script>")[-1]
     assert last["code"] == "bad_query"
-    assert len(agent.gate.day) == 0
+    assert isinstance(agent.gate, RunGate) and len(agent.gate.day) == 0
 
 
 def test_not_configured_server(agent: Agent) -> None:
