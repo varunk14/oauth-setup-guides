@@ -28,6 +28,8 @@ class Settings:
     runs_per_ip_per_hour: int
     runs_per_day: int
     generated_dir: Path
+    redis_url: str = ""
+    redis_token: str = ""
 
     @property
     def configured(self) -> bool:
@@ -57,5 +59,19 @@ def load_settings() -> Settings:
         run_timeout_s=float(_int("AGENT_RUN_TIMEOUT_S", 240)),
         runs_per_ip_per_hour=_int("AGENT_RUNS_PER_IP_PER_HOUR", 3),
         runs_per_day=_int("AGENT_RUNS_PER_DAY", 25),
-        generated_dir=Path(os.environ.get("GENERATED_DIR", REPO_ROOT / "data" / "generated")),
+        generated_dir=Path(os.environ.get("GENERATED_DIR") or default_generated_dir()),
+        # Upstash's own names, or the names Vercel's Upstash integration sets.
+        redis_url=(
+            os.environ.get("UPSTASH_REDIS_REST_URL") or os.environ.get("KV_REST_API_URL") or ""
+        ).strip(),
+        redis_token=(
+            os.environ.get("UPSTASH_REDIS_REST_TOKEN") or os.environ.get("KV_REST_API_TOKEN") or ""
+        ).strip(),
     )
+
+
+def default_generated_dir() -> Path:
+    # On Vercel only /tmp is writable (and it is not shared between instances).
+    if os.environ.get("VERCEL"):
+        return Path("/tmp/generated")
+    return REPO_ROOT / "data" / "generated"

@@ -5,17 +5,19 @@ import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.agent.limits import LimitExceeded, RunGate
+from app.agent.limits import Gate, LimitExceeded, RedisRunGate, RunGate
 from app.agent.pipeline import Deps, InvestigationError, clean_query, find_cached, investigate
 from app.agent.providers import GeminiTavilyProvider, OpenAIProvider, Provider, ProviderChain
+from app.agent.redis import UpstashRedis
 from app.agent.settings import Settings, load_settings
-from app.agent.store import GeneratedStore
+from app.agent.store import GeneratedStore, GuideRepo, RedisStore
 from app.markdown import render_markdown
 from app.probes import Allowlist, ProbeSpec, run_probes
 from app.schema import SCHEMA_VERSION, Guide, Probe
@@ -37,14 +39,25 @@ def get_settings() -> Settings:
 
 
 @lru_cache(maxsize=1)
-def get_generated() -> GeneratedStore:
+def get_redis() -> UpstashRedis | None:
+    settings = get_settings()
+    if settings.redis_url and settings.redis_token:
+        return UpstashRedis(settings.redis_url, settings.redis_token)
+    return None
+
+
+@lru_cache(maxsize=1)
+def get_generated() -> GuideRepo:
+    redis = get_redis()
+    if redis is not None:
+        return RedisStore(redis)
     return GeneratedStore(get_settings().generated_dir)
 
 
 @dataclass
 class Agent:
     settings: Settings
-    gate: RunGate
+    gate: Gate
     deps: Deps
 
 
@@ -76,11 +89,22 @@ def get_agent() -> Agent:
         library=get_store(),
         timeout_s=settings.run_timeout_s,
     )
-    return Agent(settings, RunGate(settings.runs_per_ip_per_hour, settings.runs_per_day), deps)
+    redis = get_redis()
+    gate: Gate = (
+        RedisRunGate(
+            redis,
+            settings.runs_per_ip_per_hour,
+            settings.runs_per_day,
+            lock_seconds=int(settings.run_timeout_s) + 60,
+        )
+        if redis is not None
+        else RunGate(settings.runs_per_ip_per_hour, settings.runs_per_day)
+    )
+    return Agent(settings, gate, deps)
 
 
 Store = Annotated[GuideStore, Depends(get_store)]
-Generated = Annotated[GeneratedStore, Depends(get_generated)]
+Generated = Annotated[GuideRepo, Depends(get_generated)]
 AgentDep = Annotated[Agent, Depends(get_agent)]
 
 
@@ -107,7 +131,7 @@ def list_guides(store: Store, generated: Generated) -> list[GuideSummary]:
     return [*store.summaries(), *live]
 
 
-def _find(slug: str, store: GuideStore, generated: GeneratedStore) -> Guide:
+def _find(slug: str, store: GuideStore, generated: GuideRepo) -> Guide:
     guide = store.get(slug) or generated.get(slug)
     if guide is None:
         raise HTTPException(status_code=404, detail=f"No guide found for '{slug}'.")
@@ -176,20 +200,22 @@ async def generate(body: GenerateRequest, request: Request, agent: AgentDep) -> 
                 "Live generation is not configured on this server. Browse the library instead.",
             )
             return
-        gate = agent.gate
         try:
-            gate.check(ip)
+            async with agent.gate.acquire(ip):
+                async for event in investigate(query, body.refresh, agent.deps):
+                    yield sse(event)
         except LimitExceeded as exc:
             yield _error(exc.code, exc.message)
-            return
-        # No await between the check and taking the lock, so two requests cannot both pass.
-        async with gate.lock:
-            gate.record(ip)
-            async for event in investigate(query, body.refresh, agent.deps):
-                yield sse(event)
 
     return StreamingResponse(
         stream(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# Serve the built frontend (one deployment for site and API). API routes always win;
+# unknown page paths such as /guides/zoom fall back to index.html so shared links work.
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if (FRONTEND_DIST / "index.html").is_file():
+    app.frontend("/", directory=FRONTEND_DIST, fallback="index.html")
