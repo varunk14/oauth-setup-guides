@@ -87,7 +87,23 @@ All URLs in the six guides were fetched: 93 links, all HTTP 200. Page titles wer
 A GitHub OAuth app was created by hand, following the library guide's steps exactly, to see
 whether the screens match the guide. Results:
 
-(To be filled in from the attempt.)
+Done on 2026-10-28 with a personal GitHub account. No review, no waiting; the whole attempt
+took under 20 minutes.
+
+| Guide claim | What the real screens showed | Result |
+|---|---|---|
+| Form at github.com/settings/applications/new, reached via Developer settings > OAuth Apps > New OAuth App | Form titled "Register a new OAuth app"; button "New OAuth App" | Confirmed |
+| Fields: name, homepage URL, optional description, callback URL | Application name, Homepage URL, Application description (optional), and a "Redirect URIs" section | Corrected: the form now says "Redirect URI" with an "Add redirect URI" button; GitHub's docs still say "Authorization callback URL" |
+| No privacy policy or terms field | None on the form (only GitHub's own site footer links) | Confirmed |
+| Up to 10 callback URLs; wildcard matching is a per-URL setting | "You may add up to 10 redirect URIs" and an "Allow wildcard matching" box under each | Confirmed |
+| "Enable Device Flow" is off by default | Unticked | Confirmed |
+| "Expire user access tokens" is on by default (GitHub's own pages disagree) | Ticked by default on the registration form, and not shown on the app's settings page afterwards | Confirmed; the docs conflict is settled. Guide now says it is offered only at registration |
+| No review; client ID right away; "Generate a new client secret" | Registered at once; client ID shown; button as named | Confirmed |
+| Hands-on time 10-20 minutes | Under 20 minutes | Confirmed |
+| Leave wildcard matching off | Unticked on the registration form, but shown ticked on the settings page after registration | Open: not confirmed whether GitHub set it. Guide now tells you to check it after registering |
+
+What changed in the guide: the field name, the advice to check the wildcard box after
+registering, and the token-expiry note now cites this attempt.
 
 ## 5. The live agent compared with the checked library guides
 

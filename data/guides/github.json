@@ -65,7 +65,7 @@
       }
     },
     {
-      "name": "Authorization callback URL",
+      "name": "Redirect URI (authorization callback URL)",
       "required": "yes",
       "detail": "For a Composio custom auth config, register https://backend.composio.dev/api/v3/toolkits/auth/callback. It must match the redirect URI set in the Composio auth config exactly. Some Composio toolkit defaults still use https://backend.composio.dev/api/v1/auth-apps/add, so set the v3 callback explicitly in both places to avoid redirect_uri_mismatch.",
       "evidence": {
@@ -73,7 +73,8 @@
         "source_ids": [
           "s1",
           "s6"
-        ]
+        ],
+        "note": "Confirmed in a real setup attempt on 2026-10-28. The form now labels it Redirect URI."
       }
     },
     {
@@ -242,24 +243,25 @@
     },
     {
       "order": 4,
-      "title": "Register Composio's callback URL",
-      "action": "In Authorization callback URL, enter https://backend.composio.dev/api/v3/toolkits/auth/callback exactly. You can add up to 10 callback URLs, for example a loopback http://127.0.0.1/callback for local tests. Leave wildcard matching off.",
+      "title": "Add Composio's redirect URI",
+      "action": "Under Redirect URIs, enter https://backend.composio.dev/api/v3/toolkits/auth/callback exactly. The form calls this field \"Redirect URI\" (GitHub's docs still call it the authorization callback URL). Use Add redirect URI for more, up to 10, for example a loopback http://127.0.0.1/callback for local tests. Leave Allow wildcard matching unticked.",
       "where_url": "https://github.com/settings/applications/new",
       "who": "human",
-      "expected_result": "The Composio callback is listed as an authorization callback URL.",
+      "expected_result": "The Composio callback is listed under Redirect URIs, with Allow wildcard matching unticked.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
           "s1",
           "s2",
           "s6"
-        ]
+        ],
+        "note": "Confirmed in a real setup attempt on 2026-10-28. The current form labels the field Redirect URI."
       }
     },
     {
       "order": 5,
       "title": "Keep expiring tokens on and register",
-      "action": "Leave Expire user access tokens checked (it is on by default). Only enable Device Flow if you need it. Click Register application.",
+      "action": "Leave Expire user access tokens ticked (it is ticked by default, and it is only offered here: the app's settings page does not show it after registration). Leave Enable Device Flow unticked unless you need it. Click Register application. Then open the app's settings and check that Allow wildcard matching is still unticked next to your redirect URI; untick it and click Update application if not.",
       "where_url": "https://github.com/settings/applications/new",
       "who": "human",
       "expected_result": "The app page shows a client ID.",
@@ -267,7 +269,8 @@
         "label": "SOURCED",
         "source_ids": [
           "s1"
-        ]
+        ],
+        "note": "Confirmed in a real setup attempt on 2026-10-28."
       }
     },
     {
@@ -416,7 +419,7 @@
   "nuances": [
     {
       "topic": "token_expiry",
-      "detail": "New OAuth apps have Expire user access tokens on by default: access tokens last 8 hours and come with a refresh token. GitHub's comparison page still says OAuth app tokens are long-lived by default; the newer creation page is the one that matches the current form, so we follow it. Apps that turn the setting off get non-expiring tokens.",
+      "detail": "New OAuth apps have Expire user access tokens ticked by default on the registration form: access tokens last 8 hours and come with a refresh token. GitHub's comparison page still says OAuth app tokens are long-lived by default; our real setup attempt confirmed the registration form's default. The option is offered only at registration. Apps that turn it off get non-expiring tokens.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
@@ -424,7 +427,7 @@
           "s2",
           "s3"
         ],
-        "note": "The two GitHub pages disagree; the creation page describes the current default."
+        "note": "The two GitHub pages disagree; a real setup attempt on 2026-10-28 confirmed the box is ticked by default."
       }
     },
     {
@@ -449,13 +452,14 @@
     },
     {
       "topic": "redirect_uris",
-      "detail": "Up to 10 callback URLs. Exact match by default; wildcard matching is a per-URL setting (apps with a single callback before August 3, 2026 have it on and GitHub recommends turning it off if unused). Loopback URLs may use any port, and GitHub advises 127.0.0.1 or ::1 rather than localhost. If redirect_uri is omitted, GitHub uses the first callback URL.",
+      "detail": "Up to 10 redirect URIs. Exact match unless you tick Allow wildcard matching, a per-URI setting (apps with a single callback before August 3, 2026 have it on, and GitHub recommends turning it off if unused). In our setup attempt the box was unticked on the registration form but showed as ticked on the app's settings page afterwards, so check it there. Loopback URLs may use any port, and GitHub advises 127.0.0.1 or ::1 rather than localhost. If redirect_uri is omitted, GitHub uses the first one.",
       "evidence": {
         "label": "SOURCED",
         "source_ids": [
           "s1",
           "s2"
-        ]
+        ],
+        "note": "Whether GitHub ticked the box itself or it was ticked during the test is not confirmed."
       }
     },
     {
@@ -528,7 +532,8 @@
   ],
   "unverified": [
     "Which scopes Composio's managed GitHub app requests by default.",
-    "How long org owners typically take to approve an OAuth app request; this depends on each customer."
+    "How long org owners typically take to approve an OAuth app request; this depends on each customer.",
+    "Whether GitHub turns on Allow wildcard matching by itself after registration (seen ticked on the settings page in our test, cause not confirmed)."
   ],
   "composio_note": {
     "managed_oauth": "yes",
